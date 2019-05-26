@@ -1,3 +1,7 @@
+*.idea/
+*.iml
+*.ipr
+
 # Compiled class file
 *.class
 
