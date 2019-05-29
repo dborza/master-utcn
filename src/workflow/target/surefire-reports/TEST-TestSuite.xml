@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="41" failures="0" name="TestSuite" time="0.902" errors="0" skipped="0">
+<testsuite tests="41" failures="0" name="TestSuite" time="0.872" errors="0" skipped="0">
   <properties>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
     <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/jdk1.8.0_51.jdk/Contents/Home/jre/lib"/>
@@ -64,45 +64,45 @@
     <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="sun.cpu.isalist" value=""/>
   </properties>
-  <testcase classname="com.yahoo.ycsb.TestByteIterator" name="testRandomByteIterator" time="0.012"/>
+  <testcase classname="com.yahoo.ycsb.TestByteIterator" name="testRandomByteIterator" time="0.011"/>
   <testcase classname="com.yahoo.ycsb.TestNumericByteIterator" name="testDouble" time="0.001"/>
   <testcase classname="com.yahoo.ycsb.TestNumericByteIterator" name="testLong" time="0.001"/>
   <testcase classname="com.yahoo.ycsb.TestStatus" name="testAcceptableStatus" time="0.003"/>
-  <testcase classname="com.yahoo.ycsb.TestUtils" name="bytesToDoubleTooShort" time="0"/>
-  <testcase classname="com.yahoo.ycsb.TestUtils" name="bytesToFromDouble" time="0"/>
-  <testcase classname="com.yahoo.ycsb.TestUtils" name="bytesToFromLong" time="0.001"/>
+  <testcase classname="com.yahoo.ycsb.TestUtils" name="bytesToDoubleTooShort" time="0.001"/>
+  <testcase classname="com.yahoo.ycsb.TestUtils" name="bytesToFromDouble" time="0.001"/>
+  <testcase classname="com.yahoo.ycsb.TestUtils" name="bytesToFromLong" time="0"/>
   <testcase classname="com.yahoo.ycsb.TestUtils" name="bytesToLongNull" time="0"/>
   <testcase classname="com.yahoo.ycsb.TestUtils" name="bytesToLongTooShort" time="0"/>
-  <testcase classname="com.yahoo.ycsb.TestUtils" name="jvmUtils" time="0.011"/>
-  <testcase classname="com.yahoo.ycsb.generator.AcknowledgedCounterGeneratorTest" name="testIncrementPastIntegerMaxValue" time="0.54"/>
-  <testcase classname="com.yahoo.ycsb.generator.TestIncrementingPrintableStringGenerator" name="invalidCharacterSets" time="0.001"/>
-  <testcase classname="com.yahoo.ycsb.generator.TestIncrementingPrintableStringGenerator" name="invalidLengths" time="0.001"/>
+  <testcase classname="com.yahoo.ycsb.TestUtils" name="jvmUtils" time="0.01"/>
+  <testcase classname="com.yahoo.ycsb.generator.AcknowledgedCounterGeneratorTest" name="testIncrementPastIntegerMaxValue" time="0.537"/>
+  <testcase classname="com.yahoo.ycsb.generator.TestIncrementingPrintableStringGenerator" name="invalidCharacterSets" time="0.002"/>
+  <testcase classname="com.yahoo.ycsb.generator.TestIncrementingPrintableStringGenerator" name="invalidLengths" time="0"/>
   <testcase classname="com.yahoo.ycsb.generator.TestIncrementingPrintableStringGenerator" name="rolloverException" time="0"/>
   <testcase classname="com.yahoo.ycsb.generator.TestIncrementingPrintableStringGenerator" name="rolloverOK" time="0"/>
-  <testcase classname="com.yahoo.ycsb.generator.TestIncrementingPrintableStringGenerator" name="rolloverOneCharacterException" time="0.001"/>
+  <testcase classname="com.yahoo.ycsb.generator.TestIncrementingPrintableStringGenerator" name="rolloverOneCharacterException" time="0"/>
   <testcase classname="com.yahoo.ycsb.generator.TestIncrementingPrintableStringGenerator" name="rolloverOneCharacterOK" time="0"/>
   <testcase classname="com.yahoo.ycsb.generator.TestRandomDiscreteTimestampGenerator" name="systemTime" time="0.002"/>
-  <testcase classname="com.yahoo.ycsb.generator.TestRandomDiscreteTimestampGenerator" name="tooLarge" time="0.066"/>
-  <testcase classname="com.yahoo.ycsb.generator.TestRandomDiscreteTimestampGenerator" name="withStartTime" time="0.001"/>
+  <testcase classname="com.yahoo.ycsb.generator.TestRandomDiscreteTimestampGenerator" name="tooLarge" time="0.035"/>
+  <testcase classname="com.yahoo.ycsb.generator.TestRandomDiscreteTimestampGenerator" name="withStartTime" time="0"/>
   <testcase classname="com.yahoo.ycsb.generator.TestUnixEpochTimestampGenerator" name="ctorWithIntervalAndUnits" time="0"/>
-  <testcase classname="com.yahoo.ycsb.generator.TestUnixEpochTimestampGenerator" name="ctorWithIntervalAndUnitsAndStart" time="0.001"/>
+  <testcase classname="com.yahoo.ycsb.generator.TestUnixEpochTimestampGenerator" name="ctorWithIntervalAndUnitsAndStart" time="0"/>
   <testcase classname="com.yahoo.ycsb.generator.TestUnixEpochTimestampGenerator" name="defaultCtor" time="0"/>
   <testcase classname="com.yahoo.ycsb.generator.TestUnixEpochTimestampGenerator" name="variousIntervalsAndUnits" time="0"/>
-  <testcase classname="com.yahoo.ycsb.generator.TestZipfianGenerator" name="testMinAndMaxParameter" time="0.005"/>
-  <testcase classname="com.yahoo.ycsb.measurements.exporter.TestMeasurementsExporter" name="testJSONArrayMeasurementsExporter" time="0.217"/>
-  <testcase classname="com.yahoo.ycsb.workloads.TestCoreWorkload" name="createOperationChooser" time="0.005"/>
-  <testcase classname="com.yahoo.ycsb.workloads.TestCoreWorkload" name="createOperationChooserNullProperties" time="0"/>
-  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="badTimeUnit" time="0.007"/>
+  <testcase classname="com.yahoo.ycsb.generator.TestZipfianGenerator" name="testMinAndMaxParameter" time="0.006"/>
+  <testcase classname="com.yahoo.ycsb.measurements.exporter.TestMeasurementsExporter" name="testJSONArrayMeasurementsExporter" time="0.223"/>
+  <testcase classname="com.yahoo.ycsb.workloads.TestCoreWorkload" name="createOperationChooser" time="0.006"/>
+  <testcase classname="com.yahoo.ycsb.workloads.TestCoreWorkload" name="createOperationChooserNullProperties" time="0.001"/>
+  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="badTimeUnit" time="0"/>
   <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="failedToInitThread" time="0"/>
   <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="failedToInitWorkloadBeforeThreadInit" time="0"/>
-  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="insertOneKeyOneTagCardinalityOne" time="0.002"/>
-  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="insertOneKeyTwoTagsLowCardinality" time="0.007"/>
-  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="insertThreeKeysTwoThreads" time="0"/>
+  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="insertOneKeyOneTagCardinalityOne" time="0.005"/>
+  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="insertOneKeyTwoTagsLowCardinality" time="0.004"/>
+  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="insertThreeKeysTwoThreads" time="0.007"/>
   <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="insertTwoKeysTwoTagsLowCardinality" time="0"/>
   <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="insertTwoKeysTwoThreads" time="0.002"/>
-  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="insertWithValidation" time="0.004"/>
+  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="insertWithValidation" time="0.002"/>
   <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="read" time="0.001"/>
-  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="twoThreads" time="0.001"/>
-  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="validateSettingsDataIntegrity" time="0.001"/>
-  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="verifyRow" time="0.008"/>
+  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="twoThreads" time="0"/>
+  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="validateSettingsDataIntegrity" time="0"/>
+  <testcase classname="com.yahoo.ycsb.workloads.TestTimeSeriesWorkload" name="verifyRow" time="0.011"/>
 </testsuite>

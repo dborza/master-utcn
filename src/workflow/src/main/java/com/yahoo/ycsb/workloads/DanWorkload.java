@@ -533,6 +533,7 @@ public class DanWorkload extends Workload {
    * Builds a value for a randomly chosen field.
    */
   private HashMap<String, ByteIterator> buildSingleValue(String key) {
+    System.out.println(">>> buildSinglevalue key=" + key);
     HashMap<String, ByteIterator> value = new HashMap<>();
 
     String fieldkey = fieldnames.get(fieldchooser.nextValue().intValue());
@@ -545,6 +546,7 @@ public class DanWorkload extends Workload {
     }
     value.put(fieldkey, data);
 
+    System.out.println(">>> buildValue value = " + value);
     return value;
   }
 
@@ -552,6 +554,7 @@ public class DanWorkload extends Workload {
    * Builds values for all fields.
    */
   private HashMap<String, ByteIterator> buildValues(String key) {
+    System.out.println(">>> buildValues key=" + key);
     HashMap<String, ByteIterator> values = new HashMap<>();
 
     for (String fieldkey : fieldnames) {
@@ -564,13 +567,24 @@ public class DanWorkload extends Workload {
       }
       values.put(fieldkey, data);
     }
+    System.out.println(">>> buildValues values = " + valuesToString(values));
     return values;
   }
 
-  /**
+  private String valuesToString(HashMap<String, ByteIterator> values) {
+    StringBuilder sb = new StringBuilder("{");
+    values.forEach((k, v) -> {
+        sb.append("(k=" + k + ",v=" + v.toString() + ")");
+    });
+    return sb.append("}").toString();
+  }
+
+
+    /**
    * Build a deterministic value given the key information.
    */
   private String buildDeterministicValue(String key, String fieldkey) {
+    System.out.println(">>> buildDeterministicValue key=" + key + ", fieldKey=" + fieldkey);
     int size = fieldlengthgenerator.nextValue().intValue();
     StringBuilder sb = new StringBuilder(size);
     sb.append(key);
@@ -582,6 +596,7 @@ public class DanWorkload extends Workload {
     }
     sb.setLength(size);
 
+    System.out.println(">>> buildDeterministicValue value=" + sb.toString());
     return sb.toString();
   }
 
@@ -595,8 +610,10 @@ public class DanWorkload extends Workload {
   public boolean doInsert(DB db, Object threadstate) {
     int keynum = keysequence.nextValue().intValue();
     String dbkey = buildKeyName(keynum);
+    //  TODO: make sure buildValues returns values for multiple tables to insert based on the schema, etc.
     HashMap<String, ByteIterator> values = buildValues(dbkey);
 
+    System.out.println(">>> doInsert keynum=" + keynum + ", dbKey=" + dbkey + ", values=" + valuesToString(values));
     Status status;
     int numOfRetries = 0;
     do {
@@ -637,6 +654,7 @@ public class DanWorkload extends Workload {
   @Override
   public boolean doTransaction(DB db, Object threadstate) {
     String operation = operationchooser.nextString();
+    System.out.println(">>> doTransaction operation = " + operation);
     if(operation == null) {
       return false;
     }
@@ -669,6 +687,7 @@ public class DanWorkload extends Workload {
    * Bucket 2 means null data was returned when some data was expected.
    */
   protected void verifyRow(String key, HashMap<String, ByteIterator> cells) {
+    System.out.println(">>> verifyRow");
     Status verifyStatus = Status.OK;
     long startTime = System.nanoTime();
     if (!cells.isEmpty()) {
@@ -707,20 +726,21 @@ public class DanWorkload extends Workload {
 
     String keyname = buildKeyName(keynum);
 
+    System.out.println(">>> doTransactionRead keynum=" + keynum + ", keyname=" + keyname);
     HashSet<String> fields = null;
 
     if (!readallfields) {
       // read a random field
       String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
 
-      fields = new HashSet<String>();
+      fields = new HashSet<>();
       fields.add(fieldname);
     } else if (dataintegrity) {
       // pass the full field list if dataintegrity is on for verification
-      fields = new HashSet<String>(fieldnames);
+      fields = new HashSet<>(fieldnames);
     }
 
-    HashMap<String, ByteIterator> cells = new HashMap<String, ByteIterator>();
+    HashMap<String, ByteIterator> cells = new HashMap<>();
     db.read(table, keyname, fields, cells);
 
     if (dataintegrity) {
@@ -734,6 +754,7 @@ public class DanWorkload extends Workload {
 
     String keyname = buildKeyName(keynum);
 
+    System.out.println(">>> doTransactionReadModifyWrite keynum=" + keynum + ", keyname=" + keyname);
     HashSet<String> fields = null;
 
     if (!readallfields) {
@@ -781,6 +802,7 @@ public class DanWorkload extends Workload {
 
     String startkeyname = buildKeyName(keynum);
 
+    System.out.println(">>> doTransactionScan keynum=" + keynum + ", startkeyname=" + startkeyname);
     // choose a random scan length
     int len = scanlength.nextValue().intValue();
 
@@ -803,6 +825,7 @@ public class DanWorkload extends Workload {
 
     String keyname = buildKeyName(keynum);
 
+    System.out.println(">>> doTransactionUpdate keynum=" + keynum + ", keyname=" + keyname);
     HashMap<String, ByteIterator> values;
 
     if (writeallfields) {
@@ -820,6 +843,7 @@ public class DanWorkload extends Workload {
     // choose the next key
     long keynum = transactioninsertkeysequence.nextValue();
 
+    System.out.println(">>> doTransactionInsert keynum=" + keynum);
     try {
       String dbkey = buildKeyName(keynum);
 
