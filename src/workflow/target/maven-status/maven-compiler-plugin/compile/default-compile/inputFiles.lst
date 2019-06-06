@@ -1,6 +1,7 @@
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/StringByteIterator.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/Utils.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/Status.java
+/Users/danborza/software/master-utcn/src/workflow/src/main/java/com/borzadan/model/Sensor.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/generator/Generator.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/generator/RandomDiscreteTimestampGenerator.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/measurements/OneMeasurementTimeSeries.java
@@ -22,6 +23,7 @@
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/measurements/OneMeasurement.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/measurements/exporter/TextMeasurementsExporter.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/TimeseriesDB.java
+/Users/danborza/software/master-utcn/src/workflow/src/main/java/com/borzadan/workload/DanWorkload.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/measurements/package-info.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/generator/SequentialGenerator.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/generator/package-info.java
@@ -39,13 +41,13 @@
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/generator/SkewedLatestGenerator.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/generator/UniformLongGenerator.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/workloads/TimeSeriesWorkload.java
+/Users/danborza/software/master-utcn/src/workflow/src/main/java/com/borzadan/model/Measurement.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/measurements/exporter/MeasurementsExporter.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/RandomByteIterator.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/workloads/CoreWorkload.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/generator/DiscreteGenerator.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/DBWrapper.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/workloads/ConstantOccupancyWorkload.java
-/Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/workloads/DanWorkload.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/TerminatorThread.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/measurements/exporter/JSONArrayMeasurementsExporter.java
 /Users/danborza/software/master-utcn/src/workflow/src/main/java/com/yahoo/ycsb/BasicDB.java

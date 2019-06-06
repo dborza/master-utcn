@@ -15,11 +15,12 @@
  * LICENSE file.
  */
 
-package com.yahoo.ycsb.workloads;
+package com.borzadan.workload;
 
 import com.yahoo.ycsb.*;
 import com.yahoo.ycsb.generator.*;
 import com.yahoo.ycsb.measurements.Measurements;
+import com.yahoo.ycsb.workloads.CoreWorkload;
 
 import java.io.IOException;
 import java.util.*;
