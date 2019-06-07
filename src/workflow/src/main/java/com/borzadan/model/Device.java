@@ -8,10 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class Sensor {
+public class Device {
 
-    public static final String TABLE_NAME = "sensor";
-
+    public static final String TABLE_NAME = "device";
     /**
      * DB column names.
      */
@@ -20,7 +19,7 @@ public class Sensor {
 
     public String id;
     public String name;
-    public final List<Measurement> measurementList = new LinkedList<>();
+    public final List<Sensor> sensors = new LinkedList<>();
 
     public Map<String, ByteIterator> dbValues() {
         final Map<String, ByteIterator> values = new HashMap<>();
@@ -31,11 +30,9 @@ public class Sensor {
 
     @Override
     public String toString() {
-        return "Sensor{" +
+        return "Device{" +
                 "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", measurementList=" + measurementList +
+                ", sensors=" + sensors +
                 '}';
     }
-
 }

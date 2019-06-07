@@ -1,3 +1,4 @@
+src/workflow/target/
 *.idea/
 *.iml
 *.ipr

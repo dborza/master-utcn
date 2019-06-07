@@ -17,6 +17,9 @@
 
 package com.borzadan.workload;
 
+import com.borzadan.model.Device;
+import com.borzadan.model.Measurement;
+import com.borzadan.model.Sensor;
 import com.yahoo.ycsb.*;
 import com.yahoo.ycsb.generator.*;
 import com.yahoo.ycsb.measurements.Measurements;
@@ -119,6 +122,7 @@ public class DanWorkload extends Workload {
   public static final String FIELD_LENGTH_PROPERTY_DEFAULT = "100";
 
   /**
+   * The name of the property for the minimum length of a field in bytes.
    * The name of the property for the minimum length of a field in bytes.
    */
   public static final String MIN_FIELD_LENGTH_PROPERTY = "minfieldlength";
@@ -572,7 +576,7 @@ public class DanWorkload extends Workload {
     return values;
   }
 
-  private String valuesToString(HashMap<String, ByteIterator> values) {
+  private String valuesToString(Map<String, ByteIterator> values) {
     StringBuilder sb = new StringBuilder("{");
     values.forEach((k, v) -> {
         sb.append("(k=" + k + ",v=" + v.toString() + ")");
@@ -601,6 +605,44 @@ public class DanWorkload extends Workload {
     return sb.toString();
   }
 
+  private static final Random r = new Random();
+
+  public Device generateDevice() {
+    final Device d = new Device();
+    d.id = String.valueOf(keychooser.nextValue().longValue());
+    d.sensors.addAll(generateSensors());
+    return d;
+  }
+
+  private Collection<Sensor> generateSensors() {
+    final int numSensors = 10 + r.nextInt(100);
+    final Collection<Sensor> sensors = new ArrayList<>(numSensors);
+    for (int i = 0; i < numSensors; i ++) {
+      sensors.add(generateSensor());
+    }
+    return sensors;
+  }
+
+  private Sensor generateSensor() {
+    final Sensor s = new Sensor();
+    s.id = String.valueOf(keychooser.nextValue().longValue());
+    s.name = "s-" + r.nextLong();
+    s.measurementList.addAll(generateMeasurements(s.id));
+    return s;
+  }
+
+  private Collection<Measurement> generateMeasurements(String sensorId) {
+    final int numMeasurements = 10 + r.nextInt(500);
+    final Collection<Measurement> measurements = new ArrayList<>(numMeasurements);
+    for (int i = 0; i < numMeasurements; i ++) {
+      measurements.add(Measurement.Type.values()[r.nextInt(Measurement.Type.values().length)].generate(sensorId));
+    }
+    return measurements;
+  }
+
+  static class BooleanHolder {
+    Boolean b;
+  }
   /**
    * Do one insert operation. Because it will be called concurrently from multiple client threads,
    * this function must be thread safe. However, avoid synchronized, or the threads will block waiting
@@ -609,12 +651,33 @@ public class DanWorkload extends Workload {
    */
   @Override
   public boolean doInsert(DB db, Object threadstate) {
-    int keynum = keysequence.nextValue().intValue();
-    String dbkey = buildKeyName(keynum);
-    //  TODO: make sure buildValues returns values for multiple tables to insert based on the schema, etc.
-    HashMap<String, ByteIterator> values = buildValues(dbkey);
+//    int keynum = keysequence.nextValue().intValue();
 
-    System.out.println(">>> doInsert keynum=" + keynum + ", dbKey=" + dbkey + ", values=" + valuesToString(values));
+    final Device d = generateDevice();
+
+//    String dbkey = buildKeyName(keynum);
+//    //  TODO: make sure buildValues returns values for multiple tables to insert based on the schema, etc.
+//    HashMap<String, ByteIterator> values = buildValues(dbkey);
+    System.out.println(">>> doInsert device.id=" + d.id);
+
+    final BooleanHolder b = new BooleanHolder();
+    b.b = doRetryInsert(db, Device.TABLE_NAME, d.id, d.dbValues());
+
+    d.sensors.forEach(s -> {
+      b.b &= doRetryInsert(db, Sensor.TABLE_NAME, s.id, s.dbValues());
+
+      s.measurementList.forEach(m -> {
+        b.b &= doRetryInsert(db, Measurement.TABLE_NAME, m.id, m.dbValues());
+      });
+    });
+
+    return b.b;
+  }
+
+  private boolean doRetryInsert(DB db, String table, String dbkey, Map<String, ByteIterator> values) {
+    System.out.println(">>> doRetryInsert table=" + table + ", dbKey=" + dbkey);
+    System.out.println(">>> doRetryInsert values=" + valuesToString(values));
+
     Status status;
     int numOfRetries = 0;
     do {
@@ -778,7 +841,7 @@ public class DanWorkload extends Workload {
 
     // do the transaction
 
-    HashMap<String, ByteIterator> cells = new HashMap<String, ByteIterator>();
+    HashMap<String, ByteIterator> cells = new HashMap<>();
 
 
     long ist = measurements.getIntendedtartTimeNs();
@@ -813,11 +876,11 @@ public class DanWorkload extends Workload {
       // read a random field
       String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
 
-      fields = new HashSet<String>();
+      fields = new HashSet<>();
       fields.add(fieldname);
     }
 
-    db.scan(table, startkeyname, len, fields, new Vector<HashMap<String, ByteIterator>>());
+    db.scan(table, startkeyname, len, fields, new Vector<>());
   }
 
   public void doTransactionUpdate(DB db) {
