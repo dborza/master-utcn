@@ -1,8 +1,6 @@
 package com.borzadan.model;
 
 import com.yahoo.ycsb.ByteIterator;
-import com.yahoo.ycsb.NumericByteIterator;
-import com.yahoo.ycsb.RandomByteIterator;
 import com.yahoo.ycsb.StringByteIterator;
 
 import java.util.Arrays;
@@ -24,21 +22,21 @@ public class Measurement {
     /**
      * DB column names.
      */
-    public static final String ID = "id";
+    public static final String ID = "ycsb_key";
     public static final String TYPE = "type";
     public static final String SENSOR_ID = "sensorId";
     public static final String VALUES = "values";
-    public static final String TIMESTAMP = "timestamp";
+    public static final String TIMESTAMP = "create_time";
 
     public String id;
     public Type type;
     public String sensorId;
     public String[] values;
-    public Long timestamp;
+    public String timestamp;
 
     public Map<String, ByteIterator> dbValues() {
         final Map<String, ByteIterator> values = new HashMap<>();
-        values.put(ID, new StringByteIterator(id));
+//        values.put(ID, new StringByteIterator(id));
         values.put(TYPE, new StringByteIterator(type.toString()));
         values.put(SENSOR_ID, new StringByteIterator(sensorId));
         StringBuilder sb = new StringBuilder();
@@ -46,7 +44,7 @@ public class Measurement {
             sb.append(this.values[i]).append("-");
         }
         values.put(VALUES, new StringByteIterator(sb.toString()));
-        values.put(TIMESTAMP, new NumericByteIterator(timestamp));
+        values.put(TIMESTAMP, new StringByteIterator(this.timestamp));
         return values;
     }
 
@@ -112,7 +110,7 @@ public class Measurement {
             final Measurement m = new Measurement();
             m.id = m.sensorId + "-" + r.nextLong();
             m.sensorId = sensorId;
-            m.timestamp = System.currentTimeMillis();
+            m.timestamp = String.valueOf(System.currentTimeMillis());
             return m;
         }
 

@@ -350,7 +350,9 @@ public class DanWorkload extends Workload {
 
   protected NumberGenerator keysequence;
   protected DiscreteGenerator operationchooser;
-  protected NumberGenerator keychooser;
+  protected NumberGenerator deviceKeyChooser;
+  protected NumberGenerator sensorKeyChooser;
+  protected NumberGenerator measurementKeyChooser;
   protected NumberGenerator fieldchooser;
   protected AcknowledgedCounterGenerator transactioninsertkeysequence;
   protected NumberGenerator scanlength;
@@ -462,7 +464,9 @@ public class DanWorkload extends Workload {
       double frac = Double.parseDouble(p.getProperty(
           ExponentialGenerator.EXPONENTIAL_FRAC_PROPERTY,
           ExponentialGenerator.EXPONENTIAL_FRAC_DEFAULT));
-      keychooser = new ExponentialGenerator(percentile, recordcount * frac);
+      deviceKeyChooser = new ExponentialGenerator(percentile, recordcount * frac);
+      sensorKeyChooser = new ExponentialGenerator(percentile, recordcount * frac);
+      measurementKeyChooser = new ExponentialGenerator(percentile, recordcount * frac);
     } else {
       orderedinserts = true;
     }
@@ -472,9 +476,13 @@ public class DanWorkload extends Workload {
 
     transactioninsertkeysequence = new AcknowledgedCounterGenerator(recordcount);
     if (requestdistrib.compareTo("uniform") == 0) {
-      keychooser = new UniformLongGenerator(insertstart, insertstart + insertcount - 1);
+      deviceKeyChooser = new UniformLongGenerator(insertstart, insertstart + insertcount - 1);
+      sensorKeyChooser = new UniformLongGenerator(insertstart, insertstart + insertcount - 1);
+      measurementKeyChooser = new UniformLongGenerator(insertstart, insertstart + insertcount - 1);
     } else if (requestdistrib.compareTo("sequential") == 0) {
-      keychooser = new SequentialGenerator(insertstart, insertstart + insertcount - 1);
+      deviceKeyChooser = new SequentialGenerator(insertstart, insertstart + insertcount - 1);
+      sensorKeyChooser = new SequentialGenerator(insertstart, insertstart + insertcount - 1);
+      measurementKeyChooser = new SequentialGenerator(insertstart, insertstart + insertcount - 1);
     } else if (requestdistrib.compareTo("zipfian") == 0) {
       // it does this by generating a random "next key" in part by taking the modulus over the
       // number of keys.
@@ -490,16 +498,21 @@ public class DanWorkload extends Workload {
       int opcount = Integer.parseInt(p.getProperty(Client.OPERATION_COUNT_PROPERTY));
       int expectednewkeys = (int) ((opcount) * insertproportion * 2.0); // 2 is fudge factor
 
-      keychooser = new ScrambledZipfianGenerator(insertstart, insertstart + insertcount + expectednewkeys);
+      deviceKeyChooser = new ScrambledZipfianGenerator(insertstart, insertstart + insertcount + expectednewkeys);
+      sensorKeyChooser = new ScrambledZipfianGenerator(insertstart, insertstart + insertcount + expectednewkeys);
+      measurementKeyChooser = new ScrambledZipfianGenerator(insertstart, insertstart + insertcount + expectednewkeys);
     } else if (requestdistrib.compareTo("latest") == 0) {
-      keychooser = new SkewedLatestGenerator(transactioninsertkeysequence);
+      deviceKeyChooser = new SkewedLatestGenerator(transactioninsertkeysequence);
+      sensorKeyChooser = new SkewedLatestGenerator(transactioninsertkeysequence);
+      measurementKeyChooser = new SkewedLatestGenerator(transactioninsertkeysequence);
     } else if (requestdistrib.equals("hotspot")) {
       double hotsetfraction =
           Double.parseDouble(p.getProperty(HOTSPOT_DATA_FRACTION, HOTSPOT_DATA_FRACTION_DEFAULT));
       double hotopnfraction =
           Double.parseDouble(p.getProperty(HOTSPOT_OPN_FRACTION, HOTSPOT_OPN_FRACTION_DEFAULT));
-      keychooser = new HotspotIntegerGenerator(insertstart, insertstart + insertcount - 1,
-          hotsetfraction, hotopnfraction);
+      deviceKeyChooser = new HotspotIntegerGenerator(insertstart, insertstart + insertcount - 1, hotsetfraction, hotopnfraction);
+      sensorKeyChooser = new HotspotIntegerGenerator(insertstart, insertstart + insertcount - 1, hotsetfraction, hotopnfraction);
+      measurementKeyChooser = new HotspotIntegerGenerator(insertstart, insertstart + insertcount - 1, hotsetfraction, hotopnfraction);
     } else {
       throw new WorkloadException("Unknown request distribution \"" + requestdistrib + "\"");
     }
@@ -609,24 +622,26 @@ public class DanWorkload extends Workload {
 
   public Device generateDevice() {
     final Device d = new Device();
-    d.id = String.valueOf(keychooser.nextValue().longValue());
-    d.sensors.addAll(generateSensors());
+    d.id = String.valueOf(deviceKeyChooser.nextValue().longValue());
+    d.name  = "device-" + d.id;
+    d.sensors.addAll(generateSensors(d.id));
     return d;
   }
 
-  private Collection<Sensor> generateSensors() {
+  private Collection<Sensor> generateSensors(String deviceId) {
     final int numSensors = 10 + r.nextInt(100);
     final Collection<Sensor> sensors = new ArrayList<>(numSensors);
     for (int i = 0; i < numSensors; i ++) {
-      sensors.add(generateSensor());
+      sensors.add(generateSensor(deviceId));
     }
     return sensors;
   }
 
-  private Sensor generateSensor() {
+  private Sensor generateSensor(String deviceId) {
     final Sensor s = new Sensor();
-    s.id = String.valueOf(keychooser.nextValue().longValue());
-    s.name = "s-" + r.nextLong();
+    s.id = String.valueOf(sensorKeyChooser.nextValue().longValue());
+    s.deviceId = deviceId;
+    s.name = "sensor-" + s.id;
     s.measurementList.addAll(generateMeasurements(s.id));
     return s;
   }
@@ -772,13 +787,13 @@ public class DanWorkload extends Workload {
 
   long nextKeynum() {
     long keynum;
-    if (keychooser instanceof ExponentialGenerator) {
+    if (deviceKeyChooser instanceof ExponentialGenerator) {
       do {
-        keynum = transactioninsertkeysequence.lastValue() - keychooser.nextValue().intValue();
+        keynum = transactioninsertkeysequence.lastValue() - deviceKeyChooser.nextValue().intValue();
       } while (keynum < 0);
     } else {
       do {
-        keynum = keychooser.nextValue().intValue();
+        keynum = deviceKeyChooser.nextValue().intValue();
       } while (keynum > transactioninsertkeysequence.lastValue());
     }
     return keynum;

@@ -1,4 +1,4 @@
-recordcount=50
+recordcount=5
 operationcount=5
 workload=com.borzadan.workload.DanWorkload
 
@@ -9,4 +9,4 @@ updateproportion=0.25
 scanproportion=0.25
 insertproportion=0.25
 
-requestdistribution=zipfian
+requestdistribution=sequential

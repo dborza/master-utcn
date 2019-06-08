@@ -15,17 +15,20 @@ public class Sensor {
     /**
      * DB column names.
      */
-    public static final String ID = "id";
+    public static final String ID = "ycsb_key";
     public static final String NAME = "name";
+    public static final String DEVICE_ID = "deviceId";
 
     public String id;
     public String name;
+    public String deviceId;
     public final List<Measurement> measurementList = new LinkedList<>();
 
     public Map<String, ByteIterator> dbValues() {
         final Map<String, ByteIterator> values = new HashMap<>();
-        values.put(ID, new StringByteIterator(id));
+//        values.put(ID, new StringByteIterator(id));
         values.put(NAME, new StringByteIterator(name));
+        values.put(DEVICE_ID, new StringByteIterator(deviceId));
         return values;
     }
 
