@@ -22,9 +22,8 @@ public class Measurement {
     /**
      * DB column names.
      */
-    public static final String ID = "ycsb_key";
     public static final String TYPE = "type";
-    public static final String SENSOR_ID = "sensorId";
+    public static final String SENSOR_ID = "sensor_id";
     public static final String VALUES = "values";
     public static final String TIMESTAMP = "create_time";
 
@@ -36,7 +35,6 @@ public class Measurement {
 
     public Map<String, ByteIterator> dbValues() {
         final Map<String, ByteIterator> values = new HashMap<>();
-//        values.put(ID, new StringByteIterator(id));
         values.put(TYPE, new StringByteIterator(type.toString()));
         values.put(SENSOR_ID, new StringByteIterator(sensorId));
         StringBuilder sb = new StringBuilder();

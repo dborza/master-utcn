@@ -14,7 +14,6 @@ public class Device {
     /**
      * DB column names.
      */
-    public static final String ID = "ycsb_key";
     public static final String NAME = "name";
 
     public String id;
@@ -23,7 +22,6 @@ public class Device {
 
     public Map<String, ByteIterator> dbValues() {
         final Map<String, ByteIterator> values = new HashMap<>();
-//        values.put(ID, new StringByteIterator(id));
         values.put(NAME, new StringByteIterator(name));
         return values;
     }
