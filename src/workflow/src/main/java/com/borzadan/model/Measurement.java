@@ -14,7 +14,7 @@ import java.util.Random;
 public class Measurement {
 
     interface Factory {
-        Measurement generate(String sensorId);
+        Measurement generate(String id, String sensorId);
     }
 
     public static final String TABLE_NAME = "measurement";
@@ -66,8 +66,8 @@ public class Measurement {
 
         TEMPERATURE() {
             @Override
-            public Measurement generate(String sensorId) {
-                Measurement m = newMeasurement(sensorId);
+            public Measurement generate(String id, String sensorId) {
+                Measurement m = newMeasurement(id, sensorId);
                 m.type = Type.TEMPERATURE;
                 m.values = new String[1];
                 m.values[0] = String.valueOf(r.nextInt(100));
@@ -76,8 +76,8 @@ public class Measurement {
         },
         SPEED() {
             @Override
-            public Measurement generate(String sensorId) {
-                Measurement m = newMeasurement(sensorId);
+            public Measurement generate(String id, String sensorId) {
+                Measurement m = newMeasurement(id, sensorId);
                 m.type = Type.SPEED;
                 m.values = new String[1];
                 m.values[0] = String.valueOf(r.nextDouble());
@@ -86,8 +86,8 @@ public class Measurement {
         },
         DISTANCE() {
             @Override
-            public Measurement generate(String sensorId) {
-                Measurement m = newMeasurement(sensorId);
+            public Measurement generate(String id, String sensorId) {
+                Measurement m = newMeasurement(id, sensorId);
                 m.type = Type.DISTANCE;
                 m.values = new String[1];
                 m.values[0] = String.valueOf(r.nextDouble());
@@ -96,8 +96,8 @@ public class Measurement {
         },
         GEO() {
             @Override
-            public Measurement generate(String sensorId) {
-                Measurement m = newMeasurement(sensorId);
+            public Measurement generate(String id, String sensorId) {
+                Measurement m = newMeasurement(id, sensorId);
                 m.type = Type.GEO;
                 m.values = new String[2];
                 m.values[0] = String.valueOf(r.nextDouble());
@@ -106,18 +106,15 @@ public class Measurement {
             }
         };
 
-        private static Measurement newMeasurement(String sensorId) {
+        private static final Random r = new Random();
+
+        private static Measurement newMeasurement(String id, String sensorId) {
             final Measurement m = new Measurement();
-            m.id = m.sensorId + "-" + r.nextLong();
+            m.id = id;
             m.sensorId = sensorId;
             m.timestamp = String.valueOf(System.currentTimeMillis());
             return m;
         }
-
-        /**
-         * Used for generating measurement values.
-         */
-        private static final Random r = new Random();
 
     }
 

@@ -72,28 +72,9 @@ import java.util.*;
  * </ul>
  */
 public class DanWorkload extends Workload {
-  /**
-   * The name of the database table to run queries against.
-   */
-  public static final String TABLENAME_PROPERTY = "table";
-
-  /**
-   * The default name of the database table to run queries against.
-   */
-  public static final String TABLENAME_PROPERTY_DEFAULT = "usertable";
 
   protected String table;
 
-  /**
-   * The name of the property for the number of fields in a record.
-   */
-  public static final String FIELD_COUNT_PROPERTY = "fieldcount";
-
-  /**
-   * Default number of fields in a record.
-   */
-  public static final String FIELD_COUNT_PROPERTY_DEFAULT = "10";
-  
   private List<String> fieldnames;
 
   /**
@@ -338,15 +319,7 @@ public class DanWorkload extends Workload {
   public static final String INSERTION_RETRY_INTERVAL = "core_workload_insertion_retry_interval";
   public static final String INSERTION_RETRY_INTERVAL_DEFAULT = "3";
 
-  /**
-   * Field name prefix.
-   */
-  public static final String FIELD_NAME_PREFIX = "fieldnameprefix";
-
-  /**
-   * Default value of the field name prefix.
-   */
-  public static final String FIELD_NAME_PREFIX_DEFAULT = "field";
+  public static final String DEBUG = "debug";
 
   protected NumberGenerator keysequence;
   protected DiscreteGenerator operationchooser;
@@ -362,6 +335,7 @@ public class DanWorkload extends Workload {
   protected int zeropadding;
   protected int insertionRetryLimit;
   protected int insertionRetryInterval;
+  protected boolean isDebug = false;
 
   private Measurements measurements = Measurements.getMeasurements();
 
@@ -401,15 +375,11 @@ public class DanWorkload extends Workload {
    */
   @Override
   public void init(Properties p) throws WorkloadException {
-    table = p.getProperty(TABLENAME_PROPERTY, TABLENAME_PROPERTY_DEFAULT);
+    table = Measurement.TABLE_NAME;
 
-    fieldcount =
-        Long.parseLong(p.getProperty(FIELD_COUNT_PROPERTY, FIELD_COUNT_PROPERTY_DEFAULT));
-    final String fieldnameprefix = p.getProperty(FIELD_NAME_PREFIX, FIELD_NAME_PREFIX_DEFAULT);
-    fieldnames = new ArrayList<>();
-    for (int i = 0; i < fieldcount; i++) {
-      fieldnames.add(fieldnameprefix + i);
-    }
+    fieldnames = Arrays.asList(Measurement.VALUES, Measurement.TIMESTAMP, Measurement.TYPE, Measurement.SENSOR_ID);
+    fieldcount = fieldnames.size() - 1;
+
     fieldlengthgenerator = DanWorkload.getFieldLengthGenerator(p);
 
     recordcount =
@@ -425,6 +395,7 @@ public class DanWorkload extends Workload {
         Integer.parseInt(p.getProperty(MAX_SCAN_LENGTH_PROPERTY, MAX_SCAN_LENGTH_PROPERTY_DEFAULT));
     String scanlengthdistrib =
         p.getProperty(SCAN_LENGTH_DISTRIBUTION_PROPERTY, SCAN_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT);
+    isDebug = Boolean.valueOf(p.getProperty(DEBUG, "false"));
 
     long insertstart =
         Long.parseLong(p.getProperty(INSERT_START_PROPERTY, INSERT_START_PROPERTY_DEFAULT));
@@ -481,8 +452,8 @@ public class DanWorkload extends Workload {
       measurementKeyChooser = new UniformLongGenerator(insertstart, insertstart + insertcount - 1);
     } else if (requestdistrib.compareTo("sequential") == 0) {
       deviceKeyChooser = new SequentialGenerator(insertstart, insertstart + insertcount - 1);
-      sensorKeyChooser = new SequentialGenerator(insertstart, insertstart + insertcount - 1);
-      measurementKeyChooser = new SequentialGenerator(insertstart, insertstart + insertcount - 1);
+      sensorKeyChooser = new SequentialGenerator(insertstart, Integer.MAX_VALUE);
+      measurementKeyChooser = new SequentialGenerator(insertstart, Integer.MAX_VALUE);
     } else if (requestdistrib.compareTo("zipfian") == 0) {
       // it does this by generating a random "next key" in part by taking the modulus over the
       // number of keys.
@@ -535,23 +506,14 @@ public class DanWorkload extends Workload {
   }
 
   protected String buildKeyName(long keynum) {
-    if (!orderedinserts) {
-      keynum = Utils.hash(keynum);
-    }
-    String value = Long.toString(keynum);
-    int fill = zeropadding - value.length();
-    String prekey = "user";
-    for (int i = 0; i < fill; i++) {
-      prekey += '0';
-    }
-    return prekey + value;
+    return String.valueOf(keynum);
   }
 
   /**
    * Builds a value for a randomly chosen field.
    */
   private HashMap<String, ByteIterator> buildSingleValue(String key) {
-    System.out.println(">>> buildSinglevalue key=" + key);
+    debug(">>> buildSinglevalue key=" + key);
     HashMap<String, ByteIterator> value = new HashMap<>();
 
     String fieldkey = fieldnames.get(fieldchooser.nextValue().intValue());
@@ -564,15 +526,21 @@ public class DanWorkload extends Workload {
     }
     value.put(fieldkey, data);
 
-    System.out.println(">>> buildValue value = " + value);
+    debug(">>> buildValue value = " + value);
     return value;
+  }
+
+  private void debug(String s) {
+    if (isDebug) {
+      System.out.println(s);
+    }
   }
 
   /**
    * Builds values for all fields.
    */
   private HashMap<String, ByteIterator> buildValues(String key) {
-    System.out.println(">>> buildValues key=" + key);
+    debug(">>> buildValues key=" + key);
     HashMap<String, ByteIterator> values = new HashMap<>();
 
     for (String fieldkey : fieldnames) {
@@ -585,7 +553,7 @@ public class DanWorkload extends Workload {
       }
       values.put(fieldkey, data);
     }
-    System.out.println(">>> buildValues values = " + valuesToString(values));
+    debug(">>> buildValues values = " + valuesToString(values));
     return values;
   }
 
@@ -602,7 +570,7 @@ public class DanWorkload extends Workload {
    * Build a deterministic value given the key information.
    */
   private String buildDeterministicValue(String key, String fieldkey) {
-    System.out.println(">>> buildDeterministicValue key=" + key + ", fieldKey=" + fieldkey);
+    debug(">>> buildDeterministicValue key=" + key + ", fieldKey=" + fieldkey);
     int size = fieldlengthgenerator.nextValue().intValue();
     StringBuilder sb = new StringBuilder(size);
     sb.append(key);
@@ -614,7 +582,7 @@ public class DanWorkload extends Workload {
     }
     sb.setLength(size);
 
-    System.out.println(">>> buildDeterministicValue value=" + sb.toString());
+    debug(">>> buildDeterministicValue value=" + sb.toString());
     return sb.toString();
   }
 
@@ -650,7 +618,9 @@ public class DanWorkload extends Workload {
     final int numMeasurements = 10 + r.nextInt(500);
     final Collection<Measurement> measurements = new ArrayList<>(numMeasurements);
     for (int i = 0; i < numMeasurements; i ++) {
-      measurements.add(Measurement.Type.values()[r.nextInt(Measurement.Type.values().length)].generate(sensorId));
+      final int measurmentType = r.nextInt(Measurement.Type.values().length);
+      final String measurementId = String.valueOf(measurementKeyChooser.nextValue().longValue());
+      measurements.add(Measurement.Type.values()[measurmentType].generate(measurementId, sensorId));
     }
     return measurements;
   }
@@ -666,14 +636,7 @@ public class DanWorkload extends Workload {
    */
   @Override
   public boolean doInsert(DB db, Object threadstate) {
-//    int keynum = keysequence.nextValue().intValue();
-
     final Device d = generateDevice();
-
-//    String dbkey = buildKeyName(keynum);
-//    //  TODO: make sure buildValues returns values for multiple tables to insert based on the schema, etc.
-//    HashMap<String, ByteIterator> values = buildValues(dbkey);
-    System.out.println(">>> doInsert device.id=" + d.id);
 
     final BooleanHolder b = new BooleanHolder();
     b.b = doRetryInsert(db, Device.TABLE_NAME, d.id, d.dbValues());
@@ -690,8 +653,8 @@ public class DanWorkload extends Workload {
   }
 
   private boolean doRetryInsert(DB db, String table, String dbkey, Map<String, ByteIterator> values) {
-    System.out.println(">>> doRetryInsert table=" + table + ", dbKey=" + dbkey);
-    System.out.println(">>> doRetryInsert values=" + valuesToString(values));
+    debug(">>> doRetryInsert table=" + table + ", dbKey=" + dbkey);
+    debug(">>> doRetryInsert values=" + valuesToString(values));
 
     Status status;
     int numOfRetries = 0;
@@ -733,7 +696,7 @@ public class DanWorkload extends Workload {
   @Override
   public boolean doTransaction(DB db, Object threadstate) {
     String operation = operationchooser.nextString();
-    System.out.println(">>> doTransaction operation = " + operation);
+    debug(">>> doTransaction operation = " + operation);
     if(operation == null) {
       return false;
     }
@@ -766,7 +729,7 @@ public class DanWorkload extends Workload {
    * Bucket 2 means null data was returned when some data was expected.
    */
   protected void verifyRow(String key, HashMap<String, ByteIterator> cells) {
-    System.out.println(">>> verifyRow");
+    debug(">>> verifyRow");
     Status verifyStatus = Status.OK;
     long startTime = System.nanoTime();
     if (!cells.isEmpty()) {
@@ -805,7 +768,7 @@ public class DanWorkload extends Workload {
 
     String keyname = buildKeyName(keynum);
 
-    System.out.println(">>> doTransactionRead keynum=" + keynum + ", keyname=" + keyname);
+    debug(">>> doTransactionRead keynum=" + keynum + ", keyname=" + keyname);
     HashSet<String> fields = null;
 
     if (!readallfields) {
@@ -833,7 +796,7 @@ public class DanWorkload extends Workload {
 
     String keyname = buildKeyName(keynum);
 
-    System.out.println(">>> doTransactionReadModifyWrite keynum=" + keynum + ", keyname=" + keyname);
+    debug(">>> doTransactionReadModifyWrite keynum=" + keynum + ", keyname=" + keyname);
     HashSet<String> fields = null;
 
     if (!readallfields) {
@@ -881,7 +844,7 @@ public class DanWorkload extends Workload {
 
     String startkeyname = buildKeyName(keynum);
 
-    System.out.println(">>> doTransactionScan keynum=" + keynum + ", startkeyname=" + startkeyname);
+    debug(">>> doTransactionScan keynum=" + keynum + ", startkeyname=" + startkeyname);
     // choose a random scan length
     int len = scanlength.nextValue().intValue();
 
@@ -904,7 +867,7 @@ public class DanWorkload extends Workload {
 
     String keyname = buildKeyName(keynum);
 
-    System.out.println(">>> doTransactionUpdate keynum=" + keynum + ", keyname=" + keyname);
+    debug(">>> doTransactionUpdate keynum=" + keynum + ", keyname=" + keyname);
     HashMap<String, ByteIterator> values;
 
     if (writeallfields) {
@@ -922,7 +885,7 @@ public class DanWorkload extends Workload {
     // choose the next key
     long keynum = transactioninsertkeysequence.nextValue();
 
-    System.out.println(">>> doTransactionInsert keynum=" + keynum);
+    debug(">>> doTransactionInsert keynum=" + keynum);
     try {
       String dbkey = buildKeyName(keynum);
 

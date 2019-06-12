@@ -39,7 +39,13 @@ CREATE TABLE IF NOT EXISTS measurement (
   create_time VARCHAR(255)
 );
 ```
+### Stergere tabele
+```
+DELETE FROM measurement WHERE 1=1;
+DELETE FROM sensor WHERE 1=1;
+DELETE FROM device WHERE 1=1;
 
+```
 # Build workflow
 
 Instalati maven si rulati `mvn clean install` din ./src/workflow
