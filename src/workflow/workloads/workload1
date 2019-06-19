@@ -1,6 +1,7 @@
+threads=10
 debug=true
-recordcount=1
-operationcount=1
+recordcount=10
+operationcount=10
 workload=com.borzadan.workload.DanWorkload
 
 readallfields=true
