@@ -26,6 +26,9 @@ import com.yahoo.ycsb.measurements.Measurements;
 import com.yahoo.ycsb.workloads.CoreWorkload;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 /**
@@ -588,9 +591,41 @@ public class DanWorkload extends Workload {
 
   private static final Random r = new Random();
 
+  public String hash1(String id) {
+    MessageDigest messageDigest = null;
+    try {
+      messageDigest = MessageDigest.getInstance("MD5");
+    } catch (NoSuchAlgorithmException e) {
+      e.printStackTrace();
+      return null;
+    }
+    messageDigest.update(id.getBytes(),0, id.length());
+    return new BigInteger(1,messageDigest.digest()).toString(16);
+  }
+
+  public String hash2(String id) {
+    try {
+      MessageDigest md = MessageDigest.getInstance("SHA1");
+      md.reset();
+      byte[] buffer = id.getBytes("UTF-8");
+      md.update(buffer);
+      byte[] digest = md.digest();
+
+      String hexStr = "";
+      for (int i = 0; i < digest.length; i++) {
+        hexStr += Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1);
+      }
+      return hexStr;
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+      return null;
+    }
+  }
+
   public Device generateDevice() {
     final Device d = new Device();
-    d.id = String.valueOf(deviceKeyChooser.nextValue().longValue());
+    d.id = hash(String.valueOf(deviceKeyChooser.nextValue().longValue()));
     d.name  = "device-" + d.id;
     d.sensors.addAll(generateSensors(d.id));
     return d;
@@ -607,7 +642,7 @@ public class DanWorkload extends Workload {
 
   private Sensor generateSensor(String deviceId) {
     final Sensor s = new Sensor();
-    s.id = String.valueOf(sensorKeyChooser.nextValue().longValue());
+    s.id = hash(String.valueOf(sensorKeyChooser.nextValue().longValue()));
     s.deviceId = deviceId;
     s.name = "sensor-" + s.id;
     s.measurementList.addAll(generateMeasurements(s.id));
@@ -619,10 +654,14 @@ public class DanWorkload extends Workload {
     final Collection<Measurement> measurements = new ArrayList<>(numMeasurements);
     for (int i = 0; i < numMeasurements; i ++) {
       final int measurmentType = r.nextInt(Measurement.Type.values().length);
-      final String measurementId = String.valueOf(measurementKeyChooser.nextValue().longValue());
+      final String measurementId = hash(String.valueOf(measurementKeyChooser.nextValue().longValue()));
       measurements.add(Measurement.Type.values()[measurmentType].generate(measurementId, sensorId));
     }
     return measurements;
+  }
+
+  private String hash(String str) {
+    return hash1(str);
   }
 
   static class BooleanHolder {
