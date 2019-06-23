@@ -30,6 +30,8 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Dan Borza's modification of {@link CoreWorkload}
@@ -323,6 +325,7 @@ public class DanWorkload extends Workload {
   public static final String INSERTION_RETRY_INTERVAL_DEFAULT = "3";
 
   public static final String DEBUG = "debug";
+  public static final String SENSORS = "sensors";
 
   protected NumberGenerator keysequence;
   protected DiscreteGenerator operationchooser;
@@ -399,6 +402,9 @@ public class DanWorkload extends Workload {
     String scanlengthdistrib =
         p.getProperty(SCAN_LENGTH_DISTRIBUTION_PROPERTY, SCAN_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT);
     isDebug = Boolean.valueOf(p.getProperty(DEBUG, "false"));
+    SENSOR_NUM.set(Integer.valueOf(p.getProperty(SENSORS, "100")));
+
+    System.out.printf(">>> sensors = " + SENSOR_NUM.get());
 
     long insertstart =
         Long.parseLong(p.getProperty(INSERT_START_PROPERTY, INSERT_START_PROPERTY_DEFAULT));
@@ -507,6 +513,12 @@ public class DanWorkload extends Workload {
     insertionRetryInterval = Integer.parseInt(p.getProperty(
         INSERTION_RETRY_INTERVAL, INSERTION_RETRY_INTERVAL_DEFAULT));
   }
+
+  /**
+   * Keep track of the total number of sensors in order to be able to randomly select one.
+   */
+  private static final AtomicInteger SENSOR_NUM = new AtomicInteger(0);
+  private static final AtomicInteger MEASUREMENT_NUM = new AtomicInteger(0);
 
   protected String buildKeyName(long keynum) {
     return String.valueOf(keynum);
@@ -624,17 +636,18 @@ public class DanWorkload extends Workload {
   }
 
   public Device generateDevice() {
+    debug("generateDevice");
     final Device d = new Device();
     d.id = hash(String.valueOf(deviceKeyChooser.nextValue().longValue()));
     d.name  = "device-" + d.id;
-    d.sensors.addAll(generateSensors(d.id));
+    d.sensors.addAll(generateSensors(d.id, SENSOR_NUM.get()));
     return d;
   }
 
-  private Collection<Sensor> generateSensors(String deviceId) {
-    final int numSensors = 10 + r.nextInt(100);
-    final Collection<Sensor> sensors = new ArrayList<>(numSensors);
-    for (int i = 0; i < numSensors; i ++) {
+  private Collection<Sensor> generateSensors(String deviceId, int sensorNum) {
+    debug(">>> generateSensors deviceId=" + deviceId + ", sensorNum=" + sensorNum);
+    final Collection<Sensor> sensors = new ArrayList<>(sensorNum);
+    for (int i = 0; i < sensorNum; i ++) {
       sensors.add(generateSensor(deviceId));
     }
     return sensors;
@@ -675,6 +688,7 @@ public class DanWorkload extends Workload {
    */
   @Override
   public boolean doInsert(DB db, Object threadstate) {
+    debug("doInsert");
     final Device d = generateDevice();
 
     final BooleanHolder b = new BooleanHolder();
@@ -682,10 +696,6 @@ public class DanWorkload extends Workload {
 
     d.sensors.forEach(s -> {
       b.b &= doRetryInsert(db, Sensor.TABLE_NAME, s.id, s.dbValues());
-
-      s.measurementList.forEach(m -> {
-        b.b &= doRetryInsert(db, Measurement.TABLE_NAME, m.id, m.dbValues());
-      });
     });
 
     return b.b;

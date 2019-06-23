@@ -48,9 +48,9 @@ CREATE TABLE IF NOT EXISTS measurement (
 ```
 ### Delete all tables
 ```
-DELETE FROM measurement WHERE 1=1;
-DELETE FROM sensor WHERE 1=1;
-DELETE FROM device WHERE 1=1;
+DELETE FROM master.measurement WHERE 1=1;
+DELETE FROM master.sensor WHERE 1=1;
+DELETE FROM master.device WHERE 1=1;
 
 ```
 ## Rulare workflow

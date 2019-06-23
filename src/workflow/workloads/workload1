@@ -1,15 +1,16 @@
-threads=10
+threads=100
 debug=true
-recordcount=10
+sensors=100
+recordcount=100000
 operationcount=10
 workload=com.borzadan.workload.DanWorkload
 
 readallfields=true
 
 readproportion=0.25
-updateproportion=0.50
+updateproportion=0.25
 scanproportion=0.25
-insertproportion=0
+insertproportion=0.25
 
 # Only to be used with sequential.
 requestdistribution=sequential
