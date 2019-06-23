@@ -30,7 +30,6 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -77,9 +76,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * </ul>
  */
 public class DanWorkload extends Workload {
-
-  private static final String DB_NAME = "master";
-  protected String table;
 
   private final List<String> fieldnames = Arrays.asList(Measurement.VALUES, Measurement.TIMESTAMP, Measurement.TYPE, Measurement.SENSOR_ID);;
   private final Set<String> fieldnamesSet = new HashSet<>(fieldnames);
@@ -383,8 +379,6 @@ public class DanWorkload extends Workload {
    */
   @Override
   public void init(Properties p) throws WorkloadException {
-    table = DB_NAME + "." + Measurement.TABLE_NAME;
-
     fieldcount = fieldnames.size() - 1;
 
     fieldlengthgenerator = DanWorkload.getFieldLengthGenerator(p);
@@ -519,7 +513,11 @@ public class DanWorkload extends Workload {
    * Keep track of the total number of sensors in order to be able to randomly select one.
    */
   private static final AtomicInteger SENSOR_NUM = new AtomicInteger(0);
-  private static final AtomicInteger MEASUREMENT_NUM = new AtomicInteger(0);
+
+  /**
+   * Keep track of newly generated measurements during 'run' mode.
+   */
+  private static final AtomicInteger MEASUREMENT_NUM = new AtomicInteger(10);
 
   protected String buildKeyName(long keynum) {
     return String.valueOf(keynum);
@@ -834,7 +832,7 @@ public class DanWorkload extends Workload {
     debug(">>> doTransactionRead measurementId=" + measurementId);
 
     HashMap<String, ByteIterator> cells = new HashMap<>();
-    db.read(table, measurementId, fieldnamesSet, cells);
+    db.read(Measurement.TABLE_NAME, measurementId, fieldnamesSet, cells);
 
     if (dataintegrity) {
       verifyRow(measurementId, cells);
@@ -864,9 +862,9 @@ public class DanWorkload extends Workload {
 
     long ist = measurements.getIntendedtartTimeNs();
     long st = System.nanoTime();
-    db.read(table, measurementId, fieldnamesSet, cells);
+    db.read(Measurement.TABLE_NAME, measurementId, fieldnamesSet, cells);
 
-    db.update(table, measurementId, values);
+    db.update(Measurement.TABLE_NAME, measurementId, values);
 
     long en = System.nanoTime();
 
@@ -886,7 +884,7 @@ public class DanWorkload extends Workload {
     debug(">>> doTransactionScan measurementId=" + measurementId + ", startkeyname=" + len);
     // choose a random scan length
 
-    db.scan(table, measurementId, len, fieldnamesSet, new Vector<>());
+    db.scan(Measurement.TABLE_NAME, measurementId, len, fieldnamesSet, new Vector<>());
   }
 
   public void doTransactionUpdate(DB db) {
@@ -906,7 +904,7 @@ public class DanWorkload extends Workload {
       values = buildSingleValue(measurementId);
     }
 
-    db.update(table, measurementId, values);
+    db.update(Measurement.TABLE_NAME, measurementId, values);
   }
 
   public void doTransactionInsert(DB db) {
@@ -919,6 +917,9 @@ public class DanWorkload extends Workload {
       debug(">>> measurement db values=" + measurement.dbValues());
       Status insert = db.insert(Measurement.TABLE_NAME, measurement.id, measurement.dbValues());
       debug(">>> insert status = " + insert);
+      if (insert.isOk()) {
+        MEASUREMENT_NUM.incrementAndGet();
+      }
     } catch (Exception e) {
       System.out.println("Problems saving record into DB " + measurement);
       e.printStackTrace(System.out);
