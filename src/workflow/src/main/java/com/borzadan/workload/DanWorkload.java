@@ -875,7 +875,8 @@ public class DanWorkload extends Workload {
     debug(">>> doTransactionScan measurementId=" + measurementId + ", startkeyname=" + len);
     // choose a random scan length
 
-    db.scan(Measurement.TABLE_NAME, measurementId, len, fieldnamesSet, new Vector<>());
+    Status status = db.scan(Measurement.TABLE_NAME, measurementId, len, fieldnamesSet, new Vector<>());
+    debug(">>> scan status = " + status);
   }
 
   public void doTransactionUpdate(DB db) {
