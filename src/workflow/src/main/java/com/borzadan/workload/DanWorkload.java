@@ -78,9 +78,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class DanWorkload extends Workload {
 
+  private static final String DB_NAME = "master";
   protected String table;
 
-  private List<String> fieldnames;
+  private final List<String> fieldnames = Arrays.asList(Measurement.VALUES, Measurement.TIMESTAMP, Measurement.TYPE, Measurement.SENSOR_ID);;
+  private final Set<String> fieldnamesSet = new HashSet<>(fieldnames);
 
   /**
    * The name of the property for the field length distribution. Options are "uniform", "zipfian"
@@ -381,9 +383,8 @@ public class DanWorkload extends Workload {
    */
   @Override
   public void init(Properties p) throws WorkloadException {
-    table = Measurement.TABLE_NAME;
+    table = DB_NAME + "." + Measurement.TABLE_NAME;
 
-    fieldnames = Arrays.asList(Measurement.VALUES, Measurement.TIMESTAMP, Measurement.TYPE, Measurement.SENSOR_ID);
     fieldcount = fieldnames.size() - 1;
 
     fieldlengthgenerator = DanWorkload.getFieldLengthGenerator(p);
@@ -404,7 +405,7 @@ public class DanWorkload extends Workload {
     isDebug = Boolean.valueOf(p.getProperty(DEBUG, "false"));
     SENSOR_NUM.set(Integer.valueOf(p.getProperty(SENSORS, "100")));
 
-    System.out.printf(">>> sensors = " + SENSOR_NUM.get());
+    System.out.println(">>> sensors = " + SENSOR_NUM.get());
 
     long insertstart =
         Long.parseLong(p.getProperty(INSERT_START_PROPERTY, INSERT_START_PROPERTY_DEFAULT));
@@ -539,6 +540,7 @@ public class DanWorkload extends Workload {
       // fill with random data
       data = new RandomByteIterator(fieldlengthgenerator.nextValue().longValue());
     }
+    debug(">>> built new value for key=" + fieldkey);
     value.put(fieldkey, data);
 
     debug(">>> buildValue value = " + value);
@@ -640,31 +642,30 @@ public class DanWorkload extends Workload {
     final Device d = new Device();
     d.id = hash(String.valueOf(deviceKeyChooser.nextValue().longValue()));
     d.name  = "device-" + d.id;
-    d.sensors.addAll(generateSensors(d.id, SENSOR_NUM.get()));
+    d.sensors.addAll(generateSensors(d.id, SENSOR_NUM.get(), 0));
     return d;
   }
 
-  private Collection<Sensor> generateSensors(String deviceId, int sensorNum) {
+  private Collection<Sensor> generateSensors(String deviceId, final int sensorNum, final int numMeasurements) {
     debug(">>> generateSensors deviceId=" + deviceId + ", sensorNum=" + sensorNum);
     final Collection<Sensor> sensors = new ArrayList<>(sensorNum);
     for (int i = 0; i < sensorNum; i ++) {
-      sensors.add(generateSensor(deviceId));
+      sensors.add(generateSensor(deviceId, numMeasurements));
     }
     return sensors;
   }
 
-  private Sensor generateSensor(String deviceId) {
+  private Sensor generateSensor(String deviceId, final int numMeasurements) {
     final Sensor s = new Sensor();
     s.id = hash(String.valueOf(sensorKeyChooser.nextValue().longValue()));
     s.deviceId = deviceId;
     s.name = "sensor-" + s.id;
-    s.measurementList.addAll(generateMeasurements(s.id));
+    s.measurementList.addAll(generateMeasurements(s.id, numMeasurements));
     return s;
   }
 
-  private Collection<Measurement> generateMeasurements(String sensorId) {
-    final int numMeasurements = 10 + r.nextInt(500);
-    final Collection<Measurement> measurements = new ArrayList<>(numMeasurements);
+  private List<Measurement> generateMeasurements(String sensorId, final int numMeasurements) {
+    final List<Measurement> measurements = new ArrayList<>(numMeasurements);
     for (int i = 0; i < numMeasurements; i ++) {
       final int measurmentType = r.nextInt(Measurement.Type.values().length);
       final String measurementId = hash(String.valueOf(measurementKeyChooser.nextValue().longValue()));
@@ -673,6 +674,9 @@ public class DanWorkload extends Workload {
     return measurements;
   }
 
+  /**
+   * Default hash to be used for IDs.
+   */
   private String hash(String str) {
     return hash1(str);
   }
@@ -680,6 +684,7 @@ public class DanWorkload extends Workload {
   static class BooleanHolder {
     Boolean b;
   }
+
   /**
    * Do one insert operation. Because it will be called concurrently from multiple client threads,
    * this function must be thread safe. However, avoid synchronized, or the threads will block waiting
@@ -746,7 +751,7 @@ public class DanWorkload extends Workload {
   public boolean doTransaction(DB db, Object threadstate) {
     String operation = operationchooser.nextString();
     debug(">>> doTransaction operation = " + operation);
-    if(operation == null) {
+    if (operation == null) {
       return false;
     }
 
@@ -811,76 +816,62 @@ public class DanWorkload extends Workload {
     return keynum;
   }
 
+  private String selectRandomMeasurementId() {
+    final int measurementNum = MEASUREMENT_NUM.get();
+    return hash(String.valueOf(r.nextInt(measurementNum)));
+  }
+
+  private String selectRandomSensorId() {
+    final int measurementNum = SENSOR_NUM.get();
+    return hash(String.valueOf(r.nextInt(measurementNum)));
+  }
+
   public void doTransactionRead(DB db) {
     // choose a random key
-    long keynum = nextKeynum();
 
-    String keyname = buildKeyName(keynum);
+    String measurementId = selectRandomMeasurementId();
 
-    debug(">>> doTransactionRead keynum=" + keynum + ", keyname=" + keyname);
-    HashSet<String> fields = null;
-
-    if (!readallfields) {
-      // read a random field
-      String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
-
-      fields = new HashSet<>();
-      fields.add(fieldname);
-    } else if (dataintegrity) {
-      // pass the full field list if dataintegrity is on for verification
-      fields = new HashSet<>(fieldnames);
-    }
+    debug(">>> doTransactionRead measurementId=" + measurementId);
 
     HashMap<String, ByteIterator> cells = new HashMap<>();
-    db.read(table, keyname, fields, cells);
+    db.read(table, measurementId, fieldnamesSet, cells);
 
     if (dataintegrity) {
-      verifyRow(keyname, cells);
+      verifyRow(measurementId, cells);
     }
   }
 
   public void doTransactionReadModifyWrite(DB db) {
-    // choose a random key
-    long keynum = nextKeynum();
+    final String measurementId = selectRandomMeasurementId();
 
-    String keyname = buildKeyName(keynum);
+    debug(">>> doTransactionReadModifyWrite measurementId=" + measurementId);
 
-    debug(">>> doTransactionReadModifyWrite keynum=" + keynum + ", keyname=" + keyname);
-    HashSet<String> fields = null;
-
-    if (!readallfields) {
-      // read a random field
-      String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
-
-      fields = new HashSet<String>();
-      fields.add(fieldname);
-    }
-
-    HashMap<String, ByteIterator> values;
+    final HashMap<String, ByteIterator> values;
 
     if (writeallfields) {
       // new data for all the fields
-      values = buildValues(keyname);
+      debug(">>> updating single field");
+      values = buildValues(measurementId);
     } else {
+      debug(">>> updating all fields");
       // update a random field
-      values = buildSingleValue(keyname);
+      values = buildSingleValue(measurementId);
     }
 
     // do the transaction
 
     HashMap<String, ByteIterator> cells = new HashMap<>();
 
-
     long ist = measurements.getIntendedtartTimeNs();
     long st = System.nanoTime();
-    db.read(table, keyname, fields, cells);
+    db.read(table, measurementId, fieldnamesSet, cells);
 
-    db.update(table, keyname, values);
+    db.update(table, measurementId, values);
 
     long en = System.nanoTime();
 
     if (dataintegrity) {
-      verifyRow(keyname, cells);
+      verifyRow(measurementId, cells);
     }
 
     measurements.measure("READ-MODIFY-WRITE", (int) ((en - st) / 1000));
@@ -889,59 +880,49 @@ public class DanWorkload extends Workload {
 
   public void doTransactionScan(DB db) {
     // choose a random key
-    long keynum = nextKeynum();
+    final String measurementId = selectRandomMeasurementId();
+    final int len = 100;
 
-    String startkeyname = buildKeyName(keynum);
-
-    debug(">>> doTransactionScan keynum=" + keynum + ", startkeyname=" + startkeyname);
+    debug(">>> doTransactionScan measurementId=" + measurementId + ", startkeyname=" + len);
     // choose a random scan length
-    int len = scanlength.nextValue().intValue();
 
-    HashSet<String> fields = null;
-
-    if (!readallfields) {
-      // read a random field
-      String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
-
-      fields = new HashSet<>();
-      fields.add(fieldname);
-    }
-
-    db.scan(table, startkeyname, len, fields, new Vector<>());
+    db.scan(table, measurementId, len, fieldnamesSet, new Vector<>());
   }
 
   public void doTransactionUpdate(DB db) {
     // choose a random key
-    long keynum = nextKeynum();
+    final String measurementId = selectRandomMeasurementId();
 
-    String keyname = buildKeyName(keynum);
-
-    debug(">>> doTransactionUpdate keynum=" + keynum + ", keyname=" + keyname);
+    debug(">>> doTransactionUpdate measurementId=" + measurementId);
     HashMap<String, ByteIterator> values;
 
     if (writeallfields) {
       // new data for all the fields
-      values = buildValues(keyname);
+      debug(">>> updating all values");
+      values = buildValues(measurementId);
     } else {
       // update a random field
-      values = buildSingleValue(keyname);
+      debug(">>> updating single value");
+      values = buildSingleValue(measurementId);
     }
 
-    db.update(table, keyname, values);
+    db.update(table, measurementId, values);
   }
 
   public void doTransactionInsert(DB db) {
-    // choose the next key
-    long keynum = transactioninsertkeysequence.nextValue();
+    String sensorId = selectRandomSensorId();
+    Measurement measurement = generateMeasurements(sensorId, 1).get(0);
 
-    debug(">>> doTransactionInsert keynum=" + keynum);
+    debug(">>> doTransactionInsert measurementId=" + measurement.id);
     try {
-      String dbkey = buildKeyName(keynum);
-
-      HashMap<String, ByteIterator> values = buildValues(dbkey);
-      db.insert(table, dbkey, values);
-    } finally {
-      transactioninsertkeysequence.acknowledge(keynum);
+      debug(">>> generated measurement=" + measurement);
+      debug(">>> measurement db values=" + measurement.dbValues());
+      Status insert = db.insert(Measurement.TABLE_NAME, measurement.id, measurement.dbValues());
+      debug(">>> insert status = " + insert);
+    } catch (Exception e) {
+      System.out.println("Problems saving record into DB " + measurement);
+      e.printStackTrace(System.out);
+      throw e;
     }
   }
 
