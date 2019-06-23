@@ -1,13 +1,12 @@
 threads=100
 debug=true
 workload=com.borzadan.workload.DanWorkload
-sensors=100
 readallfields=true
 dataintegrity = true
 # Only to be used with sequential.
 requestdistribution=sequential
 writeallfields=false
-operationcount=10
+operationcount=100
 
 # Properties for the "load" mode.
 recordcount=100000
@@ -15,5 +14,5 @@ recordcount=100000
 # Properties for the "run" mode.
 readproportion=0.0
 updateproportion=0.0
-scanproportion=1.0
-insertproportion=0.0
+scanproportion=0.0
+insertproportion=1.0

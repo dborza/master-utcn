@@ -323,7 +323,6 @@ public class DanWorkload extends Workload {
   public static final String INSERTION_RETRY_INTERVAL_DEFAULT = "3";
 
   public static final String DEBUG = "debug";
-  public static final String SENSORS = "sensors";
 
   protected NumberGenerator keysequence;
   protected DiscreteGenerator operationchooser;
@@ -342,6 +341,31 @@ public class DanWorkload extends Workload {
   protected boolean isDebug = false;
 
   private Measurements measurements = Measurements.getMeasurements();
+
+  private static final String DEVICE_ROWS = "device_rows";
+  private static final String SENSOR_ROWS = "sensor_rows";
+  private static final String MEASUREMENT_ROWS = "measurement_rows";
+
+  /**
+   * Keep track of the total number of sensors in order to be able to randomly select one.
+   */
+  private final AtomicInteger SENSOR_NUM = new AtomicInteger(0);
+
+  /**
+   * Keep track of total number of measurements;
+   */
+  private final AtomicInteger MEASUREMENT_NUM = new AtomicInteger(0);
+
+  /**
+   * Keep track of total number of devices
+   */
+  private final AtomicInteger DEVICE_NUM = new AtomicInteger(0);
+
+  private void readExistingValue(final Properties p, final String propertyName, final AtomicInteger value) {
+    final int intValue = Integer.parseInt(p.getProperty(propertyName, "0"));
+    value.set(intValue);
+    debug(">>> read value of " + propertyName + "=" + value.intValue());
+  }
 
   protected static NumberGenerator getFieldLengthGenerator(Properties p) throws WorkloadException {
     NumberGenerator fieldlengthgenerator;
@@ -397,7 +421,10 @@ public class DanWorkload extends Workload {
     String scanlengthdistrib =
         p.getProperty(SCAN_LENGTH_DISTRIBUTION_PROPERTY, SCAN_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT);
     isDebug = Boolean.valueOf(p.getProperty(DEBUG, "false"));
-    SENSOR_NUM.set(Integer.valueOf(p.getProperty(SENSORS, "100")));
+
+    readExistingValue(p, DEVICE_ROWS, DEVICE_NUM);
+    readExistingValue(p, SENSOR_ROWS, SENSOR_NUM);
+    readExistingValue(p, MEASUREMENT_ROWS, MEASUREMENT_NUM);
 
     System.out.println(">>> sensors = " + SENSOR_NUM.get());
 
@@ -455,9 +482,9 @@ public class DanWorkload extends Workload {
       sensorKeyChooser = new UniformLongGenerator(insertstart, insertstart + insertcount - 1);
       measurementKeyChooser = new UniformLongGenerator(insertstart, insertstart + insertcount - 1);
     } else if (requestdistrib.compareTo("sequential") == 0) {
-      deviceKeyChooser = new SequentialGenerator(insertstart, insertstart + insertcount - 1);
-      sensorKeyChooser = new SequentialGenerator(insertstart, Integer.MAX_VALUE);
-      measurementKeyChooser = new SequentialGenerator(insertstart, Integer.MAX_VALUE);
+      deviceKeyChooser = new SequentialGenerator(DEVICE_NUM.get(), DEVICE_NUM.get() + insertcount - 1);
+      sensorKeyChooser = new SequentialGenerator(SENSOR_NUM.get(), Integer.MAX_VALUE);
+      measurementKeyChooser = new SequentialGenerator(MEASUREMENT_NUM.get(), Integer.MAX_VALUE);
     } else if (requestdistrib.compareTo("zipfian") == 0) {
       // it does this by generating a random "next key" in part by taking the modulus over the
       // number of keys.
@@ -508,16 +535,6 @@ public class DanWorkload extends Workload {
     insertionRetryInterval = Integer.parseInt(p.getProperty(
         INSERTION_RETRY_INTERVAL, INSERTION_RETRY_INTERVAL_DEFAULT));
   }
-
-  /**
-   * Keep track of the total number of sensors in order to be able to randomly select one.
-   */
-  private static final AtomicInteger SENSOR_NUM = new AtomicInteger(0);
-
-  /**
-   * Keep track of newly generated measurements during 'run' mode.
-   */
-  private static final AtomicInteger MEASUREMENT_NUM = new AtomicInteger(10);
 
   protected String buildKeyName(long keynum) {
     return String.valueOf(keynum);
