@@ -526,11 +526,10 @@ public class DanWorkload extends Workload {
   /**
    * Builds a value for a randomly chosen field.
    */
-  private HashMap<String, ByteIterator> buildSingleValue(String key) {
+  private HashMap<String, ByteIterator> buildSingleValue(String key, String fieldkey) {
     debug(">>> buildSinglevalue key=" + key);
     HashMap<String, ByteIterator> value = new HashMap<>();
 
-    String fieldkey = fieldnames.get(fieldchooser.nextValue().intValue());
     ByteIterator data;
     if (dataintegrity) {
       data = new StringByteIterator(buildDeterministicValue(key, fieldkey));
@@ -846,18 +845,10 @@ public class DanWorkload extends Workload {
 
     final HashMap<String, ByteIterator> values;
 
-    if (writeallfields) {
-      // new data for all the fields
-      debug(">>> updating single field");
-      values = buildValues(measurementId);
-    } else {
-      debug(">>> updating all fields");
-      // update a random field
-      values = buildSingleValue(measurementId);
-    }
+    debug(">>> updating 'values' field");
+    values = buildSingleValue(measurementId, Measurement.VALUES);
 
     // do the transaction
-
     HashMap<String, ByteIterator> cells = new HashMap<>();
 
     long ist = measurements.getIntendedtartTimeNs();
@@ -894,15 +885,8 @@ public class DanWorkload extends Workload {
     debug(">>> doTransactionUpdate measurementId=" + measurementId);
     HashMap<String, ByteIterator> values;
 
-    if (writeallfields) {
-      // new data for all the fields
-      debug(">>> updating all values");
-      values = buildValues(measurementId);
-    } else {
-      // update a random field
-      debug(">>> updating single value");
-      values = buildSingleValue(measurementId);
-    }
+    debug(">>> updating 'values' field");
+    values = buildSingleValue(measurementId, Measurement.VALUES);
 
     db.update(Measurement.TABLE_NAME, measurementId, values);
   }

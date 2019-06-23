@@ -13,7 +13,7 @@ operationcount=10
 recordcount=100000
 
 # Properties for the "run" mode.
-readproportion=1.0
-updateproportion=0.0
+readproportion=0.0
+updateproportion=1.0
 scanproportion=0.0
 insertproportion=0.0
