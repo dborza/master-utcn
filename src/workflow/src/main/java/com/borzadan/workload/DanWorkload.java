@@ -563,7 +563,8 @@ public class DanWorkload extends Workload {
 
   private void debug(String s) {
     if (isDebug) {
-      System.out.println(s);
+      String name = Thread.currentThread().getName();
+      System.out.println("tname=" + name + ": " + s);
     }
   }
 
@@ -721,8 +722,7 @@ public class DanWorkload extends Workload {
   }
 
   private boolean doRetryInsert(DB db, String table, String dbkey, Map<String, ByteIterator> values) {
-    debug(">>> doRetryInsert table=" + table + ", dbKey=" + dbkey);
-    debug(">>> doRetryInsert values=" + valuesToString(values));
+    debug(">>> doRetryInsert table=" + table + ", dbKey=" + dbkey + ", values=" + valuesToString(values));
 
     Status status;
     int numOfRetries = 0;

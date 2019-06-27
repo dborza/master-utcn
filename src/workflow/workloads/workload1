@@ -1,4 +1,3 @@
-threads=100
 debug=true
 workload=com.borzadan.workload.DanWorkload
 readallfields=true
