@@ -77,8 +77,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class DanWorkload extends Workload {
 
-  private final List<String> fieldnames = Arrays.asList(Measurement.VALUES, Measurement.TIMESTAMP, Measurement.TYPE, Measurement.SENSOR_ID);;
-  private final Set<String> fieldnamesSet = new HashSet<>(fieldnames);
+  private static final Random RANDOM = new Random();
 
   /**
    * The name of the property for the field length distribution. Options are "uniform", "zipfian"
@@ -88,87 +87,85 @@ public class DanWorkload extends Workload {
    * fieldlength property. If "histogram", then the histogram will be read from the filename
    * specified in the "fieldlengthhistogram" property.
    */
-  public static final String FIELD_LENGTH_DISTRIBUTION_PROPERTY = "fieldlengthdistribution";
+  private static final String FIELD_LENGTH_DISTRIBUTION_PROPERTY = "fieldlengthdistribution";
 
   /**
    * The default field length distribution.
    */
-  public static final String FIELD_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT = "constant";
+  private static final String FIELD_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT = "constant";
 
   /**
    * The name of the property for the length of a field in bytes.
    */
-  public static final String FIELD_LENGTH_PROPERTY = "fieldlength";
+  private static final String FIELD_LENGTH_PROPERTY = "fieldlength";
 
   /**
    * The default maximum length of a field in bytes.
    */
-  public static final String FIELD_LENGTH_PROPERTY_DEFAULT = "100";
+  private static final String FIELD_LENGTH_PROPERTY_DEFAULT = "100";
 
   /**
    * The name of the property for the minimum length of a field in bytes.
    * The name of the property for the minimum length of a field in bytes.
    */
-  public static final String MIN_FIELD_LENGTH_PROPERTY = "minfieldlength";
+  private static final String MIN_FIELD_LENGTH_PROPERTY = "minfieldlength";
 
   /**
    * The default minimum length of a field in bytes.
    */
-  public static final String MIN_FIELD_LENGTH_PROPERTY_DEFAULT = "1";
+  private static final String MIN_FIELD_LENGTH_PROPERTY_DEFAULT = "1";
 
   /**
    * The name of a property that specifies the filename containing the field length histogram (only
    * used if fieldlengthdistribution is "histogram").
    */
-  public static final String FIELD_LENGTH_HISTOGRAM_FILE_PROPERTY = "fieldlengthhistogram";
+  private static final String FIELD_LENGTH_HISTOGRAM_FILE_PROPERTY = "fieldlengthhistogram";
 
   /**
    * The default filename containing a field length histogram.
    */
-  public static final String FIELD_LENGTH_HISTOGRAM_FILE_PROPERTY_DEFAULT = "hist.txt";
+  private static final String FIELD_LENGTH_HISTOGRAM_FILE_PROPERTY_DEFAULT = "hist.txt";
 
   /**
    * Generator object that produces field lengths.  The value of this depends on the properties that
    * start with "FIELD_LENGTH_".
    */
-  protected NumberGenerator fieldlengthgenerator;
+  private NumberGenerator fieldlengthgenerator;
 
   /**
    * The name of the property for deciding whether to read one field (false) or all fields (true) of
    * a record.
    */
-  public static final String READ_ALL_FIELDS_PROPERTY = "readallfields";
+  private static final String READ_ALL_FIELDS_PROPERTY = "readallfields";
 
   /**
    * The default value for the readallfields property.
    */
-  public static final String READ_ALL_FIELDS_PROPERTY_DEFAULT = "true";
-
-  protected boolean readallfields;
+  private static final String READ_ALL_FIELDS_PROPERTY_DEFAULT = "true";
 
   /**
    * The name of the property for deciding whether to write one field (false) or all fields (true)
    * of a record.
    */
-  public static final String WRITE_ALL_FIELDS_PROPERTY = "writeallfields";
+  private static final String WRITE_ALL_FIELDS_PROPERTY = "writeallfields";
 
   /**
    * The default value for the writeallfields property.
    */
-  public static final String WRITE_ALL_FIELDS_PROPERTY_DEFAULT = "false";
+  private static final String WRITE_ALL_FIELDS_PROPERTY_DEFAULT = "false";
 
-  protected boolean writeallfields;
+  private boolean writeallfields;
 
   /**
    * The name of the property for deciding whether to check all returned
    * data against the formation template to ensure data integrity.
    */
-  public static final String DATA_INTEGRITY_PROPERTY = "dataintegrity";
+  private static final String DATA_INTEGRITY_PROPERTY = "dataintegrity";
 
   /**
    * The default value for the dataintegrity property.
    */
-  public static final String DATA_INTEGRITY_PROPERTY_DEFAULT = "false";
+  private static final String DATA_INTEGRITY_PROPERTY_DEFAULT = "false";
 
   /**
    * Set to true if want to check correctness of reads. Must also
@@ -179,172 +176,181 @@ public class DanWorkload extends Workload {
   /**
    * The name of the property for the proportion of transactions that are reads.
    */
-  public static final String READ_PROPORTION_PROPERTY = "readproportion";
+  private static final String READ_PROPORTION_PROPERTY = "readproportion";
 
   /**
    * The default proportion of transactions that are reads.
    */
-  public static final String READ_PROPORTION_PROPERTY_DEFAULT = "0.95";
+  private static final String READ_PROPORTION_PROPERTY_DEFAULT = "0.95";
 
   /**
    * The name of the property for the proportion of transactions that are updates.
    */
-  public static final String UPDATE_PROPORTION_PROPERTY = "updateproportion";
+  private static final String UPDATE_PROPORTION_PROPERTY = "updateproportion";
 
   /**
    * The default proportion of transactions that are updates.
    */
-  public static final String UPDATE_PROPORTION_PROPERTY_DEFAULT = "0.05";
+  private static final String UPDATE_PROPORTION_PROPERTY_DEFAULT = "0.05";
 
   /**
    * The name of the property for the proportion of transactions that are inserts.
    */
-  public static final String INSERT_PROPORTION_PROPERTY = "insertproportion";
+  private static final String INSERT_PROPORTION_PROPERTY = "insertproportion";
 
   /**
    * The default proportion of transactions that are inserts.
    */
-  public static final String INSERT_PROPORTION_PROPERTY_DEFAULT = "0.0";
+  private static final String INSERT_PROPORTION_PROPERTY_DEFAULT = "0.0";
 
   /**
    * The name of the property for the proportion of transactions that are scans.
    */
-  public static final String SCAN_PROPORTION_PROPERTY = "scanproportion";
+  private static final String SCAN_PROPORTION_PROPERTY = "scanproportion";
 
   /**
    * The default proportion of transactions that are scans.
    */
-  public static final String SCAN_PROPORTION_PROPERTY_DEFAULT = "0.0";
+  private static final String SCAN_PROPORTION_PROPERTY_DEFAULT = "0.0";
 
   /**
    * The name of the property for the proportion of transactions that are read-modify-write.
    */
-  public static final String READMODIFYWRITE_PROPORTION_PROPERTY = "readmodifywriteproportion";
+  private static final String READMODIFYWRITE_PROPORTION_PROPERTY = "readmodifywriteproportion";
 
   /**
    * The default proportion of transactions that are scans.
    */
-  public static final String READMODIFYWRITE_PROPORTION_PROPERTY_DEFAULT = "0.0";
+  private static final String READMODIFYWRITE_PROPORTION_PROPERTY_DEFAULT = "0.0";
 
   /**
    * The name of the property for the the distribution of requests across the keyspace. Options are
    * "uniform", "zipfian" and "latest"
    */
-  public static final String REQUEST_DISTRIBUTION_PROPERTY = "requestdistribution";
+  private static final String REQUEST_DISTRIBUTION_PROPERTY = "requestdistribution";
 
   /**
    * The default distribution of requests across the keyspace.
    */
-  public static final String REQUEST_DISTRIBUTION_PROPERTY_DEFAULT = "uniform";
+  private static final String REQUEST_DISTRIBUTION_PROPERTY_DEFAULT = "uniform";
 
   /**
    * The name of the property for adding zero padding to record numbers in order to match
    * string sort order. Controls the number of 0s to left pad with.
    */
-  public static final String ZERO_PADDING_PROPERTY = "zeropadding";
+  private static final String ZERO_PADDING_PROPERTY = "zeropadding";
 
   /**
    * The default zero padding value. Matches integer sort order
    */
-  public static final String ZERO_PADDING_PROPERTY_DEFAULT = "1";
-
+  private static final String ZERO_PADDING_PROPERTY_DEFAULT = "1";
 
   /**
    * The name of the property for the min scan length (number of records).
    */
-  public static final String MIN_SCAN_LENGTH_PROPERTY = "minscanlength";
+  private static final String MIN_SCAN_LENGTH_PROPERTY = "minscanlength";
 
   /**
    * The default min scan length.
    */
-  public static final String MIN_SCAN_LENGTH_PROPERTY_DEFAULT = "1";
+  private static final String MIN_SCAN_LENGTH_PROPERTY_DEFAULT = "1";
 
   /**
    * The name of the property for the max scan length (number of records).
    */
-  public static final String MAX_SCAN_LENGTH_PROPERTY = "maxscanlength";
+  private static final String MAX_SCAN_LENGTH_PROPERTY = "maxscanlength";
 
   /**
    * The default max scan length.
    */
-  public static final String MAX_SCAN_LENGTH_PROPERTY_DEFAULT = "1000";
+  private static final String MAX_SCAN_LENGTH_PROPERTY_DEFAULT = "1000";
 
   /**
    * The name of the property for the scan length distribution. Options are "uniform" and "zipfian"
    * (favoring short scans)
    */
-  public static final String SCAN_LENGTH_DISTRIBUTION_PROPERTY = "scanlengthdistribution";
+  private static final String SCAN_LENGTH_DISTRIBUTION_PROPERTY = "scanlengthdistribution";
 
   /**
    * The default max scan length.
    */
-  public static final String SCAN_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT = "uniform";
+  private static final String SCAN_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT = "uniform";
 
   /**
    * The name of the property for the order to insert records. Options are "ordered" or "hashed"
    */
-  public static final String INSERT_ORDER_PROPERTY = "insertorder";
+  private static final String INSERT_ORDER_PROPERTY = "insertorder";
 
   /**
    * Default insert order.
    */
-  public static final String INSERT_ORDER_PROPERTY_DEFAULT = "hashed";
+  private static final String INSERT_ORDER_PROPERTY_DEFAULT = "hashed";
 
   /**
    * Percentage data items that constitute the hot set.
    */
-  public static final String HOTSPOT_DATA_FRACTION = "hotspotdatafraction";
+  private static final String HOTSPOT_DATA_FRACTION = "hotspotdatafraction";
 
   /**
    * Default value of the size of the hot set.
    */
-  public static final String HOTSPOT_DATA_FRACTION_DEFAULT = "0.2";
+  private static final String HOTSPOT_DATA_FRACTION_DEFAULT = "0.2";
 
   /**
    * Percentage operations that access the hot set.
    */
-  public static final String HOTSPOT_OPN_FRACTION = "hotspotopnfraction";
+  private static final String HOTSPOT_OPN_FRACTION = "hotspotopnfraction";
 
   /**
    * Default value of the percentage operations accessing the hot set.
    */
-  public static final String HOTSPOT_OPN_FRACTION_DEFAULT = "0.8";
+  private static final String HOTSPOT_OPN_FRACTION_DEFAULT = "0.8";
 
   /**
    * How many times to retry when insertion of a single item to a DB fails.
    */
-  public static final String INSERTION_RETRY_LIMIT = "core_workload_insertion_retry_limit";
-  public static final String INSERTION_RETRY_LIMIT_DEFAULT = "0";
+  private static final String INSERTION_RETRY_LIMIT = "core_workload_insertion_retry_limit";
+
+  private static final String INSERTION_RETRY_LIMIT_DEFAULT = "0";
 
   /**
    * On average, how long to wait between the retries, in seconds.
    */
-  public static final String INSERTION_RETRY_INTERVAL = "core_workload_insertion_retry_interval";
-  public static final String INSERTION_RETRY_INTERVAL_DEFAULT = "3";
+  private static final String INSERTION_RETRY_INTERVAL = "core_workload_insertion_retry_interval";
 
-  public static final String DEBUG = "debug";
+  private static final String INSERTION_RETRY_INTERVAL_DEFAULT = "3";
 
-  protected NumberGenerator keysequence;
-  protected DiscreteGenerator operationchooser;
-  protected NumberGenerator deviceKeyChooser;
-  protected NumberGenerator sensorKeyChooser;
-  protected NumberGenerator measurementKeyChooser;
-  protected NumberGenerator fieldchooser;
-  protected AcknowledgedCounterGenerator transactioninsertkeysequence;
-  protected NumberGenerator scanlength;
-  protected boolean orderedinserts;
-  protected long fieldcount;
-  protected long recordcount;
-  protected int zeropadding;
-  protected int insertionRetryLimit;
-  protected int insertionRetryInterval;
-  protected boolean isDebug = false;
-
-  private Measurements measurements = Measurements.getMeasurements();
+  private static final String DEBUG = "debug";
 
   private static final String DEVICE_ROWS = "device_rows";
+
   private static final String SENSOR_ROWS = "sensor_rows";
+
   private static final String MEASUREMENT_ROWS = "measurement_rows";
+
+  private static final int NUM_SENSORS = 10;
+
+  private NumberGenerator keysequence;
+  private DiscreteGenerator operationchooser;
+  private NumberGenerator deviceKeyChooser;
+  private NumberGenerator sensorKeyChooser;
+  private NumberGenerator measurementKeyChooser;
+  private NumberGenerator fieldchooser;
+  private AcknowledgedCounterGenerator transactioninsertkeysequence;
+  private NumberGenerator scanlength;
+  private boolean orderedinserts;
+  private long fieldcount;
+  protected long recordcount;
+  private int zeropadding;
+  private int insertionRetryLimit;
+  private int insertionRetryInterval;
+  private boolean isDebug = false;
+
+  private final List<String> fieldnames = Arrays.asList(Measurement.VALUES, Measurement.TIMESTAMP, Measurement.TYPE, Measurement.SENSOR_ID);;
+
+  private final Set<String> fieldnamesSet = new HashSet<>(fieldnames);
+
+  private Measurements measurements = Measurements.getMeasurements();
 
   /**
    * Keep track of the total number of sensors in order to be able to randomly select one.
@@ -367,7 +373,7 @@ public class DanWorkload extends Workload {
     debug(">>> read value of " + propertyName + "=" + value.intValue());
   }
 
-  protected static NumberGenerator getFieldLengthGenerator(Properties p) throws WorkloadException {
+  private static NumberGenerator getFieldLengthGenerator(Properties p) throws WorkloadException {
     NumberGenerator fieldlengthgenerator;
     String fieldlengthdistribution = p.getProperty(
         FIELD_LENGTH_DISTRIBUTION_PROPERTY, FIELD_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT);
@@ -441,8 +447,6 @@ public class DanWorkload extends Workload {
     zeropadding =
         Integer.parseInt(p.getProperty(ZERO_PADDING_PROPERTY, ZERO_PADDING_PROPERTY_DEFAULT));
 
-    readallfields = Boolean.parseBoolean(
-        p.getProperty(READ_ALL_FIELDS_PROPERTY, READ_ALL_FIELDS_PROPERTY_DEFAULT));
     writeallfields = Boolean.parseBoolean(
         p.getProperty(WRITE_ALL_FIELDS_PROPERTY, WRITE_ALL_FIELDS_PROPERTY_DEFAULT));
 
@@ -568,27 +572,6 @@ public class DanWorkload extends Workload {
     }
   }
 
-  /**
-   * Builds values for all fields.
-   */
-  private HashMap<String, ByteIterator> buildValues(String key) {
-    debug(">>> buildValues key=" + key);
-    HashMap<String, ByteIterator> values = new HashMap<>();
-
-    for (String fieldkey : fieldnames) {
-      ByteIterator data;
-      if (dataintegrity) {
-        data = new StringByteIterator(buildDeterministicValue(key, fieldkey));
-      } else {
-        // fill with random data
-        data = new RandomByteIterator(fieldlengthgenerator.nextValue().longValue());
-      }
-      values.put(fieldkey, data);
-    }
-    debug(">>> buildValues values = " + valuesToString(values));
-    return values;
-  }
-
   private String valuesToString(Map<String, ByteIterator> values) {
     StringBuilder sb = new StringBuilder("{");
     values.forEach((k, v) -> {
@@ -597,8 +580,7 @@ public class DanWorkload extends Workload {
     return sb.append("}").toString();
   }
 
-
-    /**
+  /**
    * Build a deterministic value given the key information.
    */
   private String buildDeterministicValue(String key, String fieldkey) {
@@ -618,9 +600,7 @@ public class DanWorkload extends Workload {
     return sb.toString();
   }
 
-  private static final Random r = new Random();
-
-  public String hash1(String id) {
+  private String hash1(String id) {
     MessageDigest messageDigest = null;
     try {
       messageDigest = MessageDigest.getInstance("MD5");
@@ -632,40 +612,20 @@ public class DanWorkload extends Workload {
     return new BigInteger(1,messageDigest.digest()).toString(16);
   }
 
-  public String hash2(String id) {
-    try {
-      MessageDigest md = MessageDigest.getInstance("SHA1");
-      md.reset();
-      byte[] buffer = id.getBytes("UTF-8");
-      md.update(buffer);
-      byte[] digest = md.digest();
-
-      String hexStr = "";
-      for (int i = 0; i < digest.length; i++) {
-        hexStr += Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1);
-      }
-      return hexStr;
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-      return null;
-    }
-  }
-
-  public Device generateDevice() {
+  private Device generateDevice(final int numSensors) {
     debug("generateDevice");
     final Device d = new Device();
     d.id = hash(String.valueOf(deviceKeyChooser.nextValue().longValue()));
     d.name  = "device-" + d.id;
-    d.sensors.addAll(generateSensors(d.id, SENSOR_NUM.get(), 0));
+    d.sensors.addAll(generateSensors(d.id, numSensors));
     return d;
   }
 
-  private Collection<Sensor> generateSensors(String deviceId, final int sensorNum, final int numMeasurements) {
+  private Collection<Sensor> generateSensors(String deviceId, final int sensorNum) {
     debug(">>> generateSensors deviceId=" + deviceId + ", sensorNum=" + sensorNum);
     final Collection<Sensor> sensors = new ArrayList<>(sensorNum);
     for (int i = 0; i < sensorNum; i ++) {
-      sensors.add(generateSensor(deviceId, numMeasurements));
+      sensors.add(generateSensor(deviceId, 0));
     }
     return sensors;
   }
@@ -682,7 +642,7 @@ public class DanWorkload extends Workload {
   private List<Measurement> generateMeasurements(String sensorId, final int numMeasurements) {
     final List<Measurement> measurements = new ArrayList<>(numMeasurements);
     for (int i = 0; i < numMeasurements; i ++) {
-      final int measurmentType = r.nextInt(Measurement.Type.values().length);
+      final int measurmentType = RANDOM.nextInt(Measurement.Type.values().length);
       final String measurementId = hash(String.valueOf(measurementKeyChooser.nextValue().longValue()));
       measurements.add(Measurement.Type.values()[measurmentType].generate(measurementId, sensorId));
     }
@@ -709,7 +669,7 @@ public class DanWorkload extends Workload {
   @Override
   public boolean doInsert(DB db, Object threadstate) {
     debug("doInsert");
-    final Device d = generateDevice();
+    final Device d = generateDevice(NUM_SENSORS);
 
     final BooleanHolder b = new BooleanHolder();
     b.b = doRetryInsert(db, Device.TABLE_NAME, d.id, d.dbValues());
@@ -796,7 +756,7 @@ public class DanWorkload extends Workload {
    * Bucket 1 means incorrect data was returned.
    * Bucket 2 means null data was returned when some data was expected.
    */
-  protected void verifyRow(String key, HashMap<String, ByteIterator> cells) {
+  private void verifyRow(String key, HashMap<String, ByteIterator> cells) {
     debug(">>> verifyRow");
     Status verifyStatus = Status.OK;
     long startTime = System.nanoTime();
@@ -825,10 +785,10 @@ public class DanWorkload extends Workload {
   }
 
   private String selectRandhomHashId(final int intId) {
-    return hash(String.valueOf(r.nextInt(intId)));
+    return hash(String.valueOf(RANDOM.nextInt(intId)));
   }
 
-  public void doTransactionRead(DB db) {
+  private void doTransactionRead(DB db) {
     // choose a random key
 
     String measurementId = selectRandomMeasurementId();
@@ -843,7 +803,7 @@ public class DanWorkload extends Workload {
     }
   }
 
-  public void doTransactionReadModifyWrite(DB db) {
+  private void doTransactionReadModifyWrite(DB db) {
     final String measurementId = selectRandomMeasurementId();
 
     debug(">>> doTransactionReadModifyWrite measurementId=" + measurementId);
@@ -872,7 +832,7 @@ public class DanWorkload extends Workload {
     measurements.measureIntended("READ-MODIFY-WRITE", (int) ((en - ist) / 1000));
   }
 
-  public void doTransactionScan(DB db) {
+  private void doTransactionScan(DB db) {
     // choose a random key
     final String measurementId = selectRandomMeasurementId();
     final int len = 100;
@@ -884,7 +844,7 @@ public class DanWorkload extends Workload {
     debug(">>> scan status = " + status);
   }
 
-  public void doTransactionUpdate(DB db) {
+  private void doTransactionUpdate(DB db) {
     // choose a random key
     final String measurementId = selectRandomMeasurementId();
 
@@ -897,7 +857,7 @@ public class DanWorkload extends Workload {
     db.update(Measurement.TABLE_NAME, measurementId, values);
   }
 
-  public void doTransactionInsert(DB db) {
+  private void doTransactionInsert(DB db) {
     String sensorId = selectRandomSensorId();
     Measurement measurement = generateMeasurements(sensorId, 1).get(0);
 
@@ -927,7 +887,7 @@ public class DanWorkload extends Workload {
    * @return A generator that can be used to determine the next operation to perform.
    * @throws IllegalArgumentException if the properties object was null.
    */
-  protected static DiscreteGenerator createOperationGenerator(final Properties p) {
+  private static DiscreteGenerator createOperationGenerator(final Properties p) {
     if (p == null) {
       throw new IllegalArgumentException("Properties object cannot be null");
     }
