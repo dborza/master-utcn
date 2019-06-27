@@ -816,28 +816,16 @@ public class DanWorkload extends Workload {
     measurements.reportStatus("VERIFY", verifyStatus);
   }
 
-  long nextKeynum() {
-    long keynum;
-    if (deviceKeyChooser instanceof ExponentialGenerator) {
-      do {
-        keynum = transactioninsertkeysequence.lastValue() - deviceKeyChooser.nextValue().intValue();
-      } while (keynum < 0);
-    } else {
-      do {
-        keynum = deviceKeyChooser.nextValue().intValue();
-      } while (keynum > transactioninsertkeysequence.lastValue());
-    }
-    return keynum;
-  }
-
   private String selectRandomMeasurementId() {
-    final int measurementNum = MEASUREMENT_NUM.get();
-    return hash(String.valueOf(r.nextInt(measurementNum)));
+    return selectRandhomHashId(1 + MEASUREMENT_NUM.get());
   }
 
   private String selectRandomSensorId() {
-    final int measurementNum = SENSOR_NUM.get();
-    return hash(String.valueOf(r.nextInt(measurementNum)));
+    return selectRandhomHashId(1 + SENSOR_NUM.get());
+  }
+
+  private String selectRandhomHashId(final int intId) {
+    return hash(String.valueOf(r.nextInt(intId)));
   }
 
   public void doTransactionRead(DB db) {

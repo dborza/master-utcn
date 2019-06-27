@@ -5,12 +5,13 @@ dataintegrity = true
 # Only to be used with sequential.
 requestdistribution=sequential
 writeallfields=false
-operationcount=100
 
 # Properties for the "load" mode.
 recordcount=100000
 
 # Properties for the "run" mode.
+operationcount=100000
+
 readproportion=0.0
 updateproportion=0.0
 scanproportion=0.0
