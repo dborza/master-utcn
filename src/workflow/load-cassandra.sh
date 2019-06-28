@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+sh ./create-cassandra-schema.sh
+
 DEVICE_ROWS=`cqlsh -e "select count(*) from master.device;" | sed -n 4p | awk '{$1=$1};1'`
 echo "Found existing device rows #"$DEVICE_ROWS
 

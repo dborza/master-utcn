@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+sh ./create-cockroach-schema.sh
+
 DEVICE_ROWS=`cockroach sql --insecure --user=root --host=localhost --port=26257 --database=master --execute="select count(*) from device;" | sed -n 2p | awk '{$1=$1};1'`
 echo "Found existing device rows #"$DEVICE_ROWS
 

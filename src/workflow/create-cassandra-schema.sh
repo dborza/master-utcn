@@ -1,2 +1,4 @@
 #!/usr/bin/env bash
-cqlsh -f cassandra-schema.cql | sed -n 4p | awk '{$1=$1};1'
+echo "Creating Cassandra schema."
+cqlsh -f cassandra-schema.cql
+echo "Schema creation successful."
