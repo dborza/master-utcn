@@ -31,6 +31,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 /**
  * Dan Borza's modification of {@link CoreWorkload}
@@ -76,6 +77,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * </ul>
  */
 public class DanWorkload extends Workload {
+
+  private static final Logger LOG = Logger.getLogger("DanWorkload");
 
   private static final Random RANDOM = new Random();
 
@@ -153,8 +156,6 @@ public class DanWorkload extends Workload {
    * The default value for the writeallfields property.
    */
   private static final String WRITE_ALL_FIELDS_PROPERTY_DEFAULT = "false";
-
-  private boolean writeallfields;
 
   /**
    * The name of the property for deciding whether to check all returned
@@ -320,8 +321,6 @@ public class DanWorkload extends Workload {
 
   private static final String INSERTION_RETRY_INTERVAL_DEFAULT = "3";
 
-  private static final String DEBUG = "debug";
-
   private static final String DEVICE_ROWS = "device_rows";
 
   private static final String SENSOR_ROWS = "sensor_rows";
@@ -426,13 +425,12 @@ public class DanWorkload extends Workload {
         Integer.parseInt(p.getProperty(MAX_SCAN_LENGTH_PROPERTY, MAX_SCAN_LENGTH_PROPERTY_DEFAULT));
     String scanlengthdistrib =
         p.getProperty(SCAN_LENGTH_DISTRIBUTION_PROPERTY, SCAN_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT);
-    isDebug = Boolean.valueOf(p.getProperty(DEBUG, "false"));
 
     readExistingValue(p, DEVICE_ROWS, DEVICE_NUM);
     readExistingValue(p, SENSOR_ROWS, SENSOR_NUM);
     readExistingValue(p, MEASUREMENT_ROWS, MEASUREMENT_NUM);
 
-    System.out.println(">>> sensors = " + SENSOR_NUM.get());
+    debug(">>> sensors = " + SENSOR_NUM.get());
 
     long insertstart =
         Long.parseLong(p.getProperty(INSERT_START_PROPERTY, INSERT_START_PROPERTY_DEFAULT));
@@ -446,9 +444,6 @@ public class DanWorkload extends Workload {
     }
     zeropadding =
         Integer.parseInt(p.getProperty(ZERO_PADDING_PROPERTY, ZERO_PADDING_PROPERTY_DEFAULT));
-
-    writeallfields = Boolean.parseBoolean(
-        p.getProperty(WRITE_ALL_FIELDS_PROPERTY, WRITE_ALL_FIELDS_PROPERTY_DEFAULT));
 
     dataintegrity = Boolean.parseBoolean(
         p.getProperty(DATA_INTEGRITY_PROPERTY, DATA_INTEGRITY_PROPERTY_DEFAULT));
@@ -566,10 +561,7 @@ public class DanWorkload extends Workload {
   }
 
   private void debug(String s) {
-    if (isDebug) {
-      String name = Thread.currentThread().getName();
-      System.out.println("tname=" + name + ": " + s);
-    }
+    LOG.info("tname=" + Thread.currentThread().getName() + ": " + s);
   }
 
   private String valuesToString(Map<String, ByteIterator> values) {
