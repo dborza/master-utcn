@@ -12,47 +12,8 @@ Codul sursa si documentatia pentru proiectul de master.
 
 ### Create DB Schema
 
-```
-CREATE DATABASE master;
-USE master;
-```
-### Create Device table
+run `./create-cockroach-schema.sh`
 
-```
-CREATE TABLE IF NOT EXISTS device (
-  ycsb_key VARCHAR(255) PRIMARY KEY,
-  name VARCHAR(255)
-);
-
-```
-
-### Create Sensor table
-```
-CREATE TABLE IF NOT EXISTS sensor (
-  ycsb_key VARCHAR(255) PRIMARY KEY,
-  name VARCHAR(255),
-  device_id VARCHAR(255) NOT NULL REFERENCES device(ycsb_key)
-);
-```
-
-### Create Measurement table
-
-```
-CREATE TABLE IF NOT EXISTS measurement (
-  ycsb_key VARCHAR(255) PRIMARY KEY,
-  type VARCHAR(255),
-  sensor_id VARCHAR(255) NOT NULL REFERENCES sensor(ycsb_key) NOT NULL,
-  values VARCHAR(255),
-  create_time VARCHAR(255)
-);
-```
-### Delete all tables
-```
-DELETE FROM master.measurement WHERE 1=1;
-DELETE FROM master.sensor WHERE 1=1;
-DELETE FROM master.device WHERE 1=1;
-
-```
 ## Rulare workflow
 
 Asigurati-va ca ati instalat YCSB local si ca puteti executa comanda `ycsb`
@@ -70,52 +31,11 @@ Use cockroach db for run - `mvn clean install && ycsb run jdbc -P workloads/work
 
 ## Schema
 
-### Create Keyspace
-
 #### Desktop
-```
-CREATE KEYSPACE IF NOT EXISTS master WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };
-USE master;
-```
+
+run `./create-cassandra-schema.sh`
 
 #### Cluster - TODO (needs different REPLICATION strategy).
-
-### Create Device table
-
-```
-CREATE TABLE master.device (
-  y_id text PRIMARY KEY,
-  name text
-);
-
-```
-
-### Create Sensor table
-```
-CREATE TABLE master.sensor (
-  y_id text PRIMARY KEY,
-  name text,
-  device_id text
-);
-```
-
-### Create Measurement table
-
-```
-CREATE TABLE IF NOT EXISTS measurement (
-  y_id text PRIMARY KEY,
-  type text,
-  sensor_id text,
-  values text,
-  create_time text
-);
-```
-### Delete all tables
-```
-TRUNCATE master.measurement;
-TRUNCATE master.sensor;
-TRUNCATE master.device;
-```
 
 ## Rulare workflow
 
