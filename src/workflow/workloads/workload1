@@ -6,12 +6,12 @@ requestdistribution=sequential
 writeallfields=false
 
 # Properties for the "load" mode.
-recordcount=10
+recordcount=100
 
 # Properties for the "run" mode.
-operationcount=10
+operationcount=100
 
-readproportion=0.0
-updateproportion=0.0
-scanproportion=0.0
-insertproportion=1.0
+readproportion=0.25
+readmodifywriteproportion=0.25
+scanproportion=0.25
+insertproportion=0.25

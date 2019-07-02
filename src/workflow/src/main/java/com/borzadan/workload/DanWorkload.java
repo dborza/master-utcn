@@ -567,7 +567,7 @@ public class DanWorkload extends Workload {
   private String valuesToString(Map<String, ByteIterator> values) {
     StringBuilder sb = new StringBuilder("{");
     values.forEach((k, v) -> {
-        sb.append("(k=" + k + ",v=" + v.toString() + ")");
+        sb.append("(k=" + k + ",v=" + (v == null? "null" : v.toString()) + ")");
     });
     return sb.append("}").toString();
   }
@@ -645,7 +645,9 @@ public class DanWorkload extends Workload {
    * Default hash to be used for IDs.
    */
   private String hash(String str) {
-    return hash1(str);
+    final String hash = hash1(str);
+    debug(">>> hashed '" + str + "' to '" + hash + "'");
+    return hash;
   }
 
   static class BooleanHolder {
@@ -716,7 +718,7 @@ public class DanWorkload extends Workload {
   @Override
   public boolean doTransaction(DB db, Object threadstate) {
     String operation = operationchooser.nextString();
-    debug(">>> doTransaction operation = " + operation);
+    debug(">>> <<< doTransaction operation = " + operation);
     if (operation == null) {
       return false;
     }
@@ -749,7 +751,7 @@ public class DanWorkload extends Workload {
    * Bucket 2 means null data was returned when some data was expected.
    */
   private void verifyRow(String key, HashMap<String, ByteIterator> cells) {
-    debug(">>> verifyRow");
+    debug(">>> verifyRow key=" + key + ", values=" + valuesToString(cells));
     Status verifyStatus = Status.OK;
     long startTime = System.nanoTime();
     if (!cells.isEmpty()) {
@@ -769,26 +771,36 @@ public class DanWorkload extends Workload {
   }
 
   private String selectRandomMeasurementId() {
-    return selectRandhomHashId(1 + MEASUREMENT_NUM.get());
+    debug(">>> select random measurement for total measurement #" + MEASUREMENT_NUM.get());
+    return selectRandomHashId(MEASUREMENT_NUM.get());
   }
 
   private String selectRandomSensorId() {
-    return selectRandhomHashId(1 + SENSOR_NUM.get());
+    debug(">>> select random sensor for total sensor #" + SENSOR_NUM.get());
+    return selectRandomHashId(SENSOR_NUM.get());
   }
 
-  private String selectRandhomHashId(final int intId) {
+  private String selectRandomHashId(final int intId) {
+    debug("Selecting random hash id for max limit " + intId);
     return hash(String.valueOf(RANDOM.nextInt(intId)));
   }
 
   private void doTransactionRead(DB db) {
+
+    if (MEASUREMENT_NUM.get() == 0) {
+      debug(">>> measurement num is 0, skipping read.");
+      return;
+    }
+
     // choose a random key
 
     String measurementId = selectRandomMeasurementId();
 
-    debug(">>> doTransactionRead measurementId=" + measurementId);
+    debug(">>> doTransactionRead measurementId=" + measurementId + ", fieldNamesSet=" + fieldnamesSet);
 
     HashMap<String, ByteIterator> cells = new HashMap<>();
-    db.read(Measurement.TABLE_NAME, measurementId, fieldnamesSet, cells);
+    Status status = db.read(Measurement.TABLE_NAME, measurementId, fieldnamesSet, cells);
+    debug(">>> doTransactionRead read status=" + status + ", cells=" + cells);
 
     if (dataintegrity) {
       verifyRow(measurementId, cells);
@@ -796,23 +808,28 @@ public class DanWorkload extends Workload {
   }
 
   private void doTransactionReadModifyWrite(DB db) {
+
+    if (MEASUREMENT_NUM.get() == 0) {
+      debug(">>> measurement num is 0, skipping read-modify-write.");
+      return;
+    }
+
     final String measurementId = selectRandomMeasurementId();
 
     debug(">>> doTransactionReadModifyWrite measurementId=" + measurementId);
-
-    final HashMap<String, ByteIterator> values;
-
-    debug(">>> updating 'values' field");
-    values = buildSingleValue(measurementId, Measurement.VALUES);
 
     // do the transaction
     HashMap<String, ByteIterator> cells = new HashMap<>();
 
     long ist = measurements.getIntendedtartTimeNs();
     long st = System.nanoTime();
-    db.read(Measurement.TABLE_NAME, measurementId, fieldnamesSet, cells);
+    Status read = db.read(Measurement.TABLE_NAME, measurementId, fieldnamesSet, cells);
+    debug(">>> readModifyWrite read status=" + read + ", fieldNames=" + fieldnamesSet + ", cells=" + cells);
 
-    db.update(Measurement.TABLE_NAME, measurementId, values);
+    cells.put(Measurement.VALUES, new StringByteIterator(cells.get(Measurement.VALUES).toString() + "-u"));
+    debug(">>> readModifyWrite update measurementId=" + measurementId + ", values=" + cells);
+    Status update = db.update(Measurement.TABLE_NAME, measurementId, cells);
+    debug(">>> readModifyWrite update status=" + update);
 
     long en = System.nanoTime();
 
@@ -825,46 +842,72 @@ public class DanWorkload extends Workload {
   }
 
   private void doTransactionScan(DB db) {
+
+    if (MEASUREMENT_NUM.get() == 0) {
+      debug(">>> measurement num is 0, skipping scan.");
+      return;
+    }
+
     // choose a random key
     final String measurementId = selectRandomMeasurementId();
-    final int len = 100;
 
-    debug(">>> doTransactionScan measurementId=" + measurementId + ", startkeyname=" + len);
-    // choose a random scan length
+    //  choose a random scan length
+    final int len = 30 + RANDOM.nextInt(30);
+
+    debug(">>> doTransactionScan measurementId=" + measurementId + ", startkeyname=" + measurementId + ", len=" + len
+      + ", fieldNamesSet=" + fieldnamesSet);
 
     Status status = db.scan(Measurement.TABLE_NAME, measurementId, len, fieldnamesSet, new Vector<>());
-    debug(">>> scan status = " + status);
+    debug(">>> doTransactionScan scan status = " + status);
   }
 
   private void doTransactionUpdate(DB db) {
+
+    if (MEASUREMENT_NUM.get() == 0) {
+      debug(">>> measurement num is 0, skipping update.");
+      return;
+    }
+
     // choose a random key
     final String measurementId = selectRandomMeasurementId();
 
-    debug(">>> doTransactionUpdate measurementId=" + measurementId);
     HashMap<String, ByteIterator> values;
 
-    debug(">>> updating 'values' field");
     values = buildSingleValue(measurementId, Measurement.VALUES);
 
-    db.update(Measurement.TABLE_NAME, measurementId, values);
+    debug(">>> doTransactionUpdate measurementId=" + measurementId + ", values=" + values);
+    Status update = db.update(Measurement.TABLE_NAME, measurementId, values);
+    debug(">>> doTransactionUpdate update status: " + update);
+    Map<String, ByteIterator> readMap = new HashMap<>();
+    Status read = db.read(Measurement.TABLE_NAME, measurementId, fieldnamesSet, readMap);
+    debug(">>> doTransactionUpdate read status " + read);
+    debug(">>> doTransactionUpdate values " + readMap);
+
+    if (dataintegrity) {
+      verifyRow(measurementId, values);
+    }
   }
 
   private void doTransactionInsert(DB db) {
+
+    if (SENSOR_NUM.get() == 0) {
+      debug(">>> sensor num is 0, skipping insert.");
+      return;
+    }
+
     String sensorId = selectRandomSensorId();
     Measurement measurement = generateMeasurements(sensorId, 1).get(0);
 
-    debug(">>> doTransactionInsert measurementId=" + measurement.id);
     try {
-      debug(">>> generated measurement=" + measurement);
-      debug(">>> measurement db values=" + measurement.dbValues());
+      debug(">>> doTransactionInsert measurement id =" + measurement.id + ", values=" + measurement.dbValues());
       Status insert = db.insert(Measurement.TABLE_NAME, measurement.id, measurement.dbValues());
-      debug(">>> insert status = " + insert);
+      debug(">>> doTransactionInsert insert status = " + insert);
       if (insert.isOk()) {
-        MEASUREMENT_NUM.incrementAndGet();
+        int currentMeasurements = MEASUREMENT_NUM.incrementAndGet();
+        debug(">>> current measurements: " + currentMeasurements);
       }
     } catch (Exception e) {
-      System.out.println("Problems saving record into DB " + measurement);
-      e.printStackTrace(System.out);
+      LOG.severe("Error while inserting in DB " + e.getMessage());
       throw e;
     }
   }
