@@ -1,9 +1,27 @@
 # master-utcn
 Source code and documentation for master's degree project.
 
+These instructions are valid for local / desktop development.
+
 # Install YCSB
 
+https://github.com/brianfrankcooper/YCSB/wiki/Getting-Started
+
+Add ycsb to your $PATH variable 
+
+Ubuntu - 
+
+`vi ~./profile` 
+
+and add a line like 
+
+`PATH="$HOME/ycsb/bin:$PATH"`
+
 Make sure ycsb is installed and that you can execute the `ycsb` command.
+
+# Install Maven
+
+Ubuntu - `sudo apt install maven`
 
 # Build workflow
 
@@ -11,6 +29,10 @@ Make sure ycsb is installed and that you can execute the `ycsb` command.
 cd ./src/workflow
 mvn clean install
 ```
+
+# Install Cassandra
+
+https://www.liquidweb.com/kb/install-cassandra-ubuntu-16-04-lts/
 
 # CockroachDB
 

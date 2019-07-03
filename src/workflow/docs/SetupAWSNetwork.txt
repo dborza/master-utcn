@@ -1,0 +1,18 @@
+These will be generic instructions on how to create an AWS cluster that can be used to install both Cassandra and CockroachDB databases.
+
+The cluster will consist in creating a VPC with 3 subnets in different Availability Zones.
+
+* Create a new AWS account.
+
+* In EC2 Create a new VPC with the default CIDR (10.0.0.0/24) and create a new Internet Gateway and attach it to that VPC.
+
+* Inside of the new VPC create 4 subnets by dividing the main CIDR block into 4 sub-blocks
+
+* Enable internet access for the VPC and its subnets - https://docs.axway.com/bundle/SecureTransport_54_on_AWS_InstallationGuide_allOS_en_HTML5/page/Content/AWS/securitygroups/st_gateway_subnet_routing.htm
+
+* Run the 'Cassandra_EBS_NoVPC.json' template in CloudFormation.
+
+Sample parameters:
+
+
+
