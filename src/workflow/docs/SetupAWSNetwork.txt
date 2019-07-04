@@ -2,17 +2,40 @@ These will be generic instructions on how to create an AWS cluster that can be u
 
 The cluster will consist in creating a VPC with 3 subnets in different Availability Zones.
 
-* Create a new AWS account.
+# Setup EC2
 
-* In EC2 Create a new VPC with the default CIDR (10.0.0.0/24) and create a new Internet Gateway and attach it to that VPC.
+## Create a new AWS account.
 
-* Inside of the new VPC create 4 subnets by dividing the main CIDR block into 4 sub-blocks
+## In EC2 Create a new VPC with the default CIDR (10.0.0.0/24) and create a new Internet Gateway and attach it to that VPC.
 
-* Enable internet access for the VPC and its subnets - https://docs.axway.com/bundle/SecureTransport_54_on_AWS_InstallationGuide_allOS_en_HTML5/page/Content/AWS/securitygroups/st_gateway_subnet_routing.htm
+## In EC2 create a new KeyPair that you will use to log into EC2 hosts (Ops hosts, Cassandra & CockroachDB nodes)
 
-* Run the 'Cassandra_EBS_NoVPC.json' template in CloudFormation.
+## Install Cassandra
 
-Sample parameters:
+# Run the 'Cassandra_EBS_NoVPC.json' template in CloudFormation.
+
+# Log into the ops host and install ycsb
+
+https://github.com/brianfrankcooper/YCSB/wiki/Getting-Started
+
+# Install OpenJDK 8
+
+https://www.geofis.org/en/install/install-on-linux/install-openjdk-8-on-ubuntu-trusty/
+
+# Clone the git repo
+
+`sudo apt install maven`
+`git clone https://github.com/dborza/master-utcn.git`
+`cd master-utcn/src/workflow`
+`mvn clean install`
+
+## Install Cockroach DB
+
+# Run the cockroach tempate into your cluster.
+
+https://www.cockroachlabs.com/docs/stable/deploy-a-test-cluster.html
+
+
 
 
 

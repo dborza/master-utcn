@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
 
-source ./read-input-args.sh
-
 sh ./create-cockroach-schema.sh
 
 source ./read-cockroach-table-count.sh
 
-ycsb load jdbc -P ../workloads/workload1 \
--p db.driver=org.postgresql.Driver -p db.url=jdbc:postgresql://localhost:26257/master -p db.user=root \
--p device_rows=${DEVICE_ROWS} -p sensor_rows=${SENSOR_ROWS} -p measurement_rows=${MEASUREMENT_ROWS} \
--threads ${THREADS} -cp ./../target/core-0.16.0-SNAPSHOT.jar:./../lib/slf4j-simple-1.7.26.jar
+source ./read-input-args.sh
+
+ycsb load ${COCKROACH_ARGS}
