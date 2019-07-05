@@ -24,10 +24,11 @@ https://www.geofis.org/en/install/install-on-linux/install-openjdk-8-on-ubuntu-t
 
 # Clone the git repo
 
-`sudo apt install maven`
-`git clone https://github.com/dborza/master-utcn.git`
-`cd master-utcn/src/workflow`
-`mvn clean install`
+```sudo apt install maven
+git clone https://github.com/dborza/master-utcn.git
+cd master-utcn/src/workflow
+mvn clean install dependency:copy-dependencies
+```
 
 ## Install Cockroach DB
 

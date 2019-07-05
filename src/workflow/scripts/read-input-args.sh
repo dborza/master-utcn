@@ -3,10 +3,15 @@
 # Common input args
 THREADS="10"
 
-CLASSPATH="./../target/core-0.16.0-SNAPSHOT.jar:./../lib/slf4j-simple-1.7.26.jar"
+CLASSPATH="./../target/core-0.16.0-SNAPSHOT.jar:\
+./../target/dependency/slf4j-api-1.7.26.jar:\
+./../target/dependency/log4j-core-2.12.0.jar:\
+./../target/dependency/log4j-slf4j-impl-2.12.0.jar:\
+./../target/dependency/log4j-api-2.12.0.jar"
 
 COMMON_ARGS="-P ../workloads/workload1 \
 -cp ${CLASSPATH} \
+-jvm-args=\"-Dlog4j.configurationFile=log4j.xml\" \
 -p threads=${THREADS} \
 -p device_rows=${DEVICE_ROWS} -p sensor_rows=${SENSOR_ROWS} -p measurement_rows=${MEASUREMENT_ROWS}"
 

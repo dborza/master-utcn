@@ -27,7 +27,7 @@ Ubuntu - `sudo apt install maven`
 
 ```
 cd ./src/workflow
-mvn clean install
+mvn clean install dependency:copy-dependencies
 ```
 
 # Install Cassandra
