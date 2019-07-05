@@ -4,4 +4,4 @@ source ./read-cockroach-table-count.sh
 
 source ./read-input-args.sh
 
-ycsb run ${COCKROACH_ARGS}
+eval ycsb run ${COCKROACH_ARGS}

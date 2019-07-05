@@ -4,6 +4,7 @@ dataintegrity = true
 # Only to be used with sequential.
 requestdistribution=sequential
 writeallfields=false
+threads=10
 
 # Properties for the "load" mode.
 recordcount=1000

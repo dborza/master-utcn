@@ -6,4 +6,4 @@ source ./read-cassandra-table-count.sh
 
 source ./read-input-args.sh
 
-ycsb load ${CASSANDRA_ARGS}
+eval ycsb load ${CASSANDRA_ARGS}

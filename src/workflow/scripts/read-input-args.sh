@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# Common input args
-THREADS="10"
-
 CLASSPATH="./../target/core-0.16.0-SNAPSHOT.jar:\
 ./../target/dependency/slf4j-api-1.7.26.jar:\
 ./../target/dependency/log4j-core-2.12.0.jar:\
@@ -11,8 +8,7 @@ CLASSPATH="./../target/core-0.16.0-SNAPSHOT.jar:\
 
 COMMON_ARGS="-P ../workloads/workload1 \
 -cp ${CLASSPATH} \
--jvm-args=\"-Dlog4j.configurationFile=log4j.xml\" \
--p threads=${THREADS} \
+-jvm-args \"-Dlog4j.configurationFile=log4j.xml -DlogName=`date +\"%Y-%m-%d-%T\"`\" \
 -p device_rows=${DEVICE_ROWS} -p sensor_rows=${SENSOR_ROWS} -p measurement_rows=${MEASUREMENT_ROWS}"
 
 # Cassandra input args
