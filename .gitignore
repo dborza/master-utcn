@@ -1,4 +1,6 @@
 src/workflow/target/
+scr/workflow/scripts/logs
+
 *.idea/
 *.iml
 *.ipr
@@ -8,6 +10,9 @@ src/workflow/target/
 
 # Log file
 *.log
+
+# YCSB report file
+*.report
 
 # BlueJ files
 *.ctxt

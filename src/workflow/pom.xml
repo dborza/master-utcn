@@ -80,6 +80,12 @@ LICENSE file.
       <artifactId>slf4j-api</artifactId>
       <version>${slf4jVersion}</version>
     </dependency>
+    <!-- Only to copy to target folder and reference at runtime -->
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.2.6</version>
+    </dependency>
   </dependencies>
 
   <build>

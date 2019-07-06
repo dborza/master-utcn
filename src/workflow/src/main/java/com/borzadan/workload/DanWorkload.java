@@ -34,6 +34,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.yahoo.ycsb.Client.*;
+
 /**
  * Dan Borza's modification of {@link CoreWorkload}
  *
@@ -344,7 +346,6 @@ public class DanWorkload extends Workload {
   private int zeropadding;
   private int insertionRetryLimit;
   private int insertionRetryInterval;
-  private boolean isDebug = false;
 
   private final List<String> fieldnames = Arrays.asList(Measurement.VALUES, Measurement.TIMESTAMP, Measurement.TYPE, Measurement.SENSOR_ID);;
 
@@ -370,7 +371,6 @@ public class DanWorkload extends Workload {
   private void readExistingValue(final Properties p, final String propertyName, final AtomicInteger value) {
     final int intValue = Integer.parseInt(p.getProperty(propertyName, "0"));
     value.set(intValue);
-    debug("read value of " + propertyName + "=" + value.intValue());
   }
 
   private static NumberGenerator getFieldLengthGenerator(Properties p) throws WorkloadException {
@@ -414,7 +414,7 @@ public class DanWorkload extends Workload {
     fieldlengthgenerator = DanWorkload.getFieldLengthGenerator(p);
 
     recordcount =
-        Long.parseLong(p.getProperty(Client.RECORD_COUNT_PROPERTY, Client.DEFAULT_RECORD_COUNT));
+        Long.parseLong(p.getProperty(RECORD_COUNT_PROPERTY, Client.DEFAULT_RECORD_COUNT));
     if (recordcount == 0) {
       recordcount = Integer.MAX_VALUE;
     }
@@ -426,12 +426,6 @@ public class DanWorkload extends Workload {
         Integer.parseInt(p.getProperty(MAX_SCAN_LENGTH_PROPERTY, MAX_SCAN_LENGTH_PROPERTY_DEFAULT));
     String scanlengthdistrib =
         p.getProperty(SCAN_LENGTH_DISTRIBUTION_PROPERTY, SCAN_LENGTH_DISTRIBUTION_PROPERTY_DEFAULT);
-
-    readExistingValue(p, DEVICE_ROWS, DEVICE_NUM);
-    readExistingValue(p, SENSOR_ROWS, SENSOR_NUM);
-    readExistingValue(p, MEASUREMENT_ROWS, MEASUREMENT_NUM);
-
-    debug("sensors = " + SENSOR_NUM.get());
 
     long insertstart =
         Long.parseLong(p.getProperty(INSERT_START_PROPERTY, INSERT_START_PROPERTY_DEFAULT));
@@ -534,10 +528,25 @@ public class DanWorkload extends Workload {
         INSERTION_RETRY_LIMIT, INSERTION_RETRY_LIMIT_DEFAULT));
     insertionRetryInterval = Integer.parseInt(p.getProperty(
         INSERTION_RETRY_INTERVAL, INSERTION_RETRY_INTERVAL_DEFAULT));
+
+    readExistingValue(p, DEVICE_ROWS, DEVICE_NUM);
+    readExistingValue(p, SENSOR_ROWS, SENSOR_NUM);
+    readExistingValue(p, MEASUREMENT_ROWS, MEASUREMENT_NUM);
+
+    printWorkflowProperties(p);
   }
 
-  protected String buildKeyName(long keynum) {
-    return String.valueOf(keynum);
+  private void printWorkflowProperties(Properties p) {
+    String [] properties = {
+      WORKLOAD_PROPERTY, DATA_INTEGRITY_PROPERTY, REQUEST_DISTRIBUTION_PROPERTY, THREAD_COUNT_PROPERTY, RECORD_COUNT_PROPERTY,
+      OPERATION_COUNT_PROPERTY, READ_PROPORTION_PROPERTY, READMODIFYWRITE_PROPORTION_PROPERTY, SCAN_PROPORTION_PROPERTY,
+      INSERT_PROPORTION_PROPERTY, UPDATE_PROPORTION_PROPERTY
+    };
+    final Set<String> allPropertyNames = new HashSet<>(p.stringPropertyNames());
+    allPropertyNames.addAll(Arrays.asList(properties));
+    allPropertyNames.forEach(key -> {
+      debug("Found property " + key + "=" + p.getProperty(key));
+    });
   }
 
   /**
@@ -719,7 +728,7 @@ public class DanWorkload extends Workload {
   @Override
   public boolean doTransaction(DB db, Object threadstate) {
     String operation = operationchooser.nextString();
-    debug("<<< doTransaction operation = " + operation);
+    debug("doTransaction operation = " + operation);
     if (operation == null) {
       return false;
     }

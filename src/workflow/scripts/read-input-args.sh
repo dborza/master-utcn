@@ -1,14 +1,23 @@
 #!/usr/bin/env bash
 
-CLASSPATH="./../target/core-0.16.0-SNAPSHOT.jar:\
-./../target/dependency/slf4j-api-1.7.26.jar:\
-./../target/dependency/log4j-core-2.12.0.jar:\
-./../target/dependency/log4j-slf4j-impl-2.12.0.jar:\
-./../target/dependency/log4j-api-2.12.0.jar"
+# Maven copies over all needed jars to this folder.
+LIBS="./../target"
 
+CLASSPATH="$LIBS/core-0.16.0-SNAPSHOT.jar:$LIBS/dependency/*"
+
+LOG_DIR='./logs'
+mkdir ${LOG_DIR}
+
+# Where all the logs are being stored.
+LOG_NAME="${LOG_DIR}/`date +\"%Y-%m-%d-%T\"`.log"
+
+echo "Storing output in log file "${LOG_NAME}
+
+# Common args to both the Cassandra and CockroachDB runs.
 COMMON_ARGS="-P ../workloads/workload1 \
 -cp ${CLASSPATH} \
--jvm-args \"-Dlog4j.configurationFile=log4j.xml -DlogName=`date +\"%Y-%m-%d-%T\"`\" \
+-jvm-args \"-Dlog4j.configurationFile=log4j.xml -DlogName=${LOG_NAME} \" \
+-p exportfile=${LOG_NAME}.report \
 -p device_rows=${DEVICE_ROWS} -p sensor_rows=${SENSOR_ROWS} -p measurement_rows=${MEASUREMENT_ROWS}"
 
 # Cassandra input args
