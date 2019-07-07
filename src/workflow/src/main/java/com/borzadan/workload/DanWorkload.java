@@ -574,6 +574,10 @@ public class DanWorkload extends Workload {
     LOG.info("tname=" + Thread.currentThread().getName() + ": " + s);
   }
 
+  private void error(String s) {
+    LOG.error("tname=" + Thread.currentThread().getName() + ": " + s);
+  }
+
   private String valuesToString(Map<String, ByteIterator> values) {
     StringBuilder sb = new StringBuilder("{");
     values.forEach((k, v) -> {
@@ -835,6 +839,10 @@ public class DanWorkload extends Workload {
     long st = System.nanoTime();
     Status read = db.read(Measurement.TABLE_NAME, measurementId, fieldnamesSet, cells);
     debug("readModifyWrite read status=" + read + ", fieldNames=" + fieldnamesSet + ", cells=" + cells);
+    if (!read.isOk()) {
+      LOG.error("Could not find record, will skip read-modify-write operation.");
+      return;
+    }
 
     cells.put(Measurement.VALUES, new StringByteIterator(cells.get(Measurement.VALUES).toString() + "-u"));
     debug("readModifyWrite update measurementId=" + measurementId + ", values=" + cells);

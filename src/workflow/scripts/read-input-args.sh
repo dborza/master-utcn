@@ -21,14 +21,15 @@ COMMON_ARGS="-P ../workloads/workload1 \
 -p device_rows=${DEVICE_ROWS} -p sensor_rows=${SENSOR_ROWS} -p measurement_rows=${MEASUREMENT_ROWS}"
 
 # Cassandra input args
-CASSANDRA_HOSTS="localhost"
 CASSANDRA_KEYSPACE="master"
-CASSANDRA_USER="cassandra"
-CASSANDRA_PASS="cassandra"
+
+if [ -z ${CQLSH_HOST+x} ]; then CQLSH_HOST="localhost"; fi
+if [ -z ${CASSANDRA_USER+x} ]; then CASSANDRA_USER="cassandra"; fi
+if [ -z ${CASSANDRA_PASS+x} ]; then CASSANDRA_PASS="cassandra"; fi
 
 CASSANDRA_ARGS="cassandra-cql \
 ${COMMON_ARGS} \
--p hosts=${CASSANDRA_HOSTS} -p cassandra.keyspace=${CASSANDRA_KEYSPACE} \
+-p hosts=${CQLSH_HOST} -p cassandra.keyspace=${CASSANDRA_KEYSPACE} \
 -p cassandra.username=${CASSANDRA_USER} -p cassandra.password=${CASSANDRA_PASS}"
 
 # Cockroach input args
