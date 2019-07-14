@@ -10,8 +10,8 @@ recordcount=1000
 # Properties for the "run" mode.
 operationcount=1000
 
-readproportion=0.0
+readproportion=1.00
 readmodifywriteproportion=0.00
 scanproportion=0.00
-insertproportion=1.00
+insertproportion=0.00
 updateproportion=0.00

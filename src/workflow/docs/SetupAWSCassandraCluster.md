@@ -79,3 +79,12 @@ Then you can execute the actual load test by overriding the default values found
 
 `/run-cassandra.sh -u $CASSANDRA_USER -p $CASSANDRA_PASS -p recordcount=100000 -p operationcount=1000000 -p threadcount=100`
 
+The predefined suggested set of test suites is
+
+```
+./create-cassandra-schema-cloud.sh && ./load-cassandra.sh && ./run-cassandra.sh -P ../workloads/workload1
+./run-cassandra.sh -P ../workloads/workload2
+./run-cassandra.sh -P ../workloads/workload3
+./run-cassandra.sh -P ../workloads/workload4
+./run-cassandra.sh -P ../workloads/workload5
+```

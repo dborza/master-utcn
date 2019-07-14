@@ -20,7 +20,7 @@ COMMON_ARGS="-P ../workloads/workload1 \
 -p exportfile=${LOG_NAME}.report \
 -p device_rows=${DEVICE_ROWS} -p sensor_rows=${SENSOR_ROWS} -p measurement_rows=${MEASUREMENT_ROWS}"
 
-# Cassandra input args
+# Cassandra default input args
 CASSANDRA_KEYSPACE="master"
 
 if [ -z ${CQLSH_HOST+x} ]; then CQLSH_HOST="localhost"; fi
@@ -32,14 +32,14 @@ ${COMMON_ARGS} \
 -p hosts=${CQLSH_HOST} -p cassandra.keyspace=${CASSANDRA_KEYSPACE} \
 -p cassandra.username=${CASSANDRA_USER} -p cassandra.password=${CASSANDRA_PASS}"
 
-# Cockroach input args
+# Cockroach default input args
 COCKROACH_DRIVER="org.postgresql.Driver"
-COCKROACH_USER="root"
-COCKROACH_PASS="root"
-COCKROACH_DB="master"
-COCKROACH_PORT="26257"
-COCKROACH_HOST="localhost"
-COCKROACH_URL="jdbc:postgresql://${COCKROACH_HOST}:${COCKROACH_PORT}/${COCKROACH_DB}"
+if [ -z ${COCKROACH_USER+x} ]; then COCKROACH_USER="root"; fi
+if [ -z ${COCKROACH_PASS+x} ]; then COCKROACH_PASS="root"; fi
+if [ -z ${COCKROACH_DB+x} ]; then COCKROACH_DB="master"; fi
+if [ -z ${COCKROACH_PORT+x} ]; then COCKROACH_PORT="26257"; fi
+if [ -z ${COCKROACH_HOST+x} ]; then COCKROACH_HOST="localhost"; fi
+if [ -z ${COCKROACH_URL+x} ]; then COCKROACH_URL="jdbc:postgresql://${COCKROACH_HOST}:${COCKROACH_PORT}/${COCKROACH_DB}"; fi
 
 COCKROACH_ARGS="jdbc
 ${COMMON_ARGS} \
