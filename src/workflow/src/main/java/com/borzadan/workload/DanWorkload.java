@@ -409,6 +409,11 @@ public class DanWorkload extends Workload {
    */
   @Override
   public void init(Properties p) throws WorkloadException {
+
+    readExistingValue(p, DEVICE_ROWS, DEVICE_NUM);
+    readExistingValue(p, SENSOR_ROWS, SENSOR_NUM);
+    readExistingValue(p, MEASUREMENT_ROWS, MEASUREMENT_NUM);
+
     fieldcount = fieldnames.size() - 1;
 
     fieldlengthgenerator = DanWorkload.getFieldLengthGenerator(p);
@@ -478,7 +483,7 @@ public class DanWorkload extends Workload {
     } else if (requestdistrib.compareTo("sequential") == 0) {
       deviceKeyChooser = new SequentialGenerator(DEVICE_NUM.get(), DEVICE_NUM.get() + insertcount - 1);
       sensorKeyChooser = new SequentialGenerator(SENSOR_NUM.get(), Integer.MAX_VALUE);
-      measurementKeyChooser = new SequentialGenerator(MEASUREMENT_NUM.get(), Integer.MAX_VALUE);
+      measurementKeyChooser = new SequentialGenerator(MEASUREMENT_NUM.get() + 1, Integer.MAX_VALUE);
     } else if (requestdistrib.compareTo("zipfian") == 0) {
       // it does this by generating a random "next key" in part by taking the modulus over the
       // number of keys.
@@ -528,10 +533,6 @@ public class DanWorkload extends Workload {
         INSERTION_RETRY_LIMIT, INSERTION_RETRY_LIMIT_DEFAULT));
     insertionRetryInterval = Integer.parseInt(p.getProperty(
         INSERTION_RETRY_INTERVAL, INSERTION_RETRY_INTERVAL_DEFAULT));
-
-    readExistingValue(p, DEVICE_ROWS, DEVICE_NUM);
-    readExistingValue(p, SENSOR_ROWS, SENSOR_NUM);
-    readExistingValue(p, MEASUREMENT_ROWS, MEASUREMENT_NUM);
 
     printWorkflowProperties(p);
   }
@@ -649,8 +650,11 @@ public class DanWorkload extends Workload {
     final List<Measurement> measurements = new ArrayList<>(numMeasurements);
     for (int i = 0; i < numMeasurements; i ++) {
       final int measurmentType = RANDOM.nextInt(Measurement.Type.values().length);
-      final String measurementId = hash(String.valueOf(measurementKeyChooser.nextValue().longValue()));
-      measurements.add(Measurement.Type.values()[measurmentType].generate(measurementId, sensorId));
+      final int totalMeasurements = MEASUREMENT_NUM.incrementAndGet();
+      final long nextMeasurementId = measurementKeyChooser.nextValue().longValue();
+      final String measurementIdHash = hash(String.valueOf(nextMeasurementId));
+      LOG.debug("totalMeasurements={}, nextMeasurementId={}, hash={}.", totalMeasurements, nextMeasurementId, measurementIdHash);
+      measurements.add(Measurement.Type.values()[measurmentType].generate(measurementIdHash, sensorId));
     }
     return measurements;
   }
