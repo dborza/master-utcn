@@ -1,5 +1,6 @@
 src/workflow/target/
 scr/workflow/scripts/logs
+src/workflow/scripts/cloudformation/.DS_Store
 
 *.idea/
 *.iml
