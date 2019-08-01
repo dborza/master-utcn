@@ -572,7 +572,7 @@ public class DanWorkload extends Workload {
   }
 
   private void debug(String s) {
-    LOG.info("tname=" + Thread.currentThread().getName() + ": " + s);
+    LOG.debug("tname=" + Thread.currentThread().getName() + ": " + s);
   }
 
   private void error(String s) {
@@ -819,6 +819,9 @@ public class DanWorkload extends Workload {
     HashMap<String, ByteIterator> cells = new HashMap<>();
     Status status = db.read(Measurement.TABLE_NAME, measurementId, fieldnamesSet, cells);
     debug("doTransactionRead read status=" + status + ", cells=" + cells);
+    if (!status.isOk()) {
+      LOG.error("doTransactionRead error for measurementId={}, status={}.", measurementId, status);
+    }
 
     if (dataintegrity) {
       verifyRow(measurementId, cells);
