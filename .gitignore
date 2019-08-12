@@ -1,3 +1,5 @@
+.DS_Store
+
 src/workflow/scripts/logs/
 src/workflow/target/
 src/workflow/scripts/cloudformation/.DS_Store
