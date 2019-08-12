@@ -1,14 +1,14 @@
 workload=com.borzadan.workload.DanWorkload
-dataintegrity = true
+dataintegrity=true
 # Only to be used with sequential.
 requestdistribution=sequential
 threadcount=10
 
 # Properties for the "load" mode.
-recordcount=1000
+recordcount=10000
 
 # Properties for the "run" mode.
-operationcount=1000
+operationcount=10000
 
 readproportion=0.0
 readmodifywriteproportion=0.00

@@ -23,7 +23,7 @@ Log into the ssh host using the key pair and the ops public DNS name (which you 
 
 Original instructions https://github.com/brianfrankcooper/YCSB/wiki/Getting-Started
 
-Run the script `./scripts/install-ycsb-ubuntu.sh'
+Or run the script `./scripts/install-ycsb-ubuntu.sh'
 
 Now make sure you can run YCSB on the machine by typing `ycsb`. The output should be an error message of the form `ycsb: error: too few arguments`
  
@@ -58,14 +58,16 @@ In order to connect to the Cassandra cluster first connect to one of the hosts `
 
 # Create the Cassandra database schema 
 
-Edit the `./scripts//cassandra-schema-cloud.cql` file and replace `DC0` in the replication strategy with the name you've passed 
+Edit the `./scripts/cassandra-schema-cloud.cql` file and replace `DC0` in the replication strategy with the name you've passed 
 into CloudFormation for the parameter `DC0Name`
  
 ```
 cd ./scripts
-export CASSANDRA_USER=... # Value you specified when creating the CloudFormation stack
-export CASSANDRA_PASS=... # Value you specified when creating the CloudFormation stack
-./create-cassandra-schema-cloud.sh -u $CASSANDRA_USER -p $CASSANDRA_PASS
+export CASSANDRA_USER=cassandra
+export CASSANDRA_PASS=cassandra
+export CQLSH_HOST=10.0.27.247
+export CASSANDRA_KEYSPACE=master
+./create-cassandra-schema-cloud.sh -u $CASSANDRA_USER -p $CASSANDRA_PASS $CQLSH_HOST
 ```
 
 # Finally execute the scripts
@@ -79,12 +81,55 @@ Then you can execute the actual load test by overriding the default values found
 
 `/run-cassandra.sh -u $CASSANDRA_USER -p $CASSANDRA_PASS -p recordcount=100000 -p operationcount=1000000 -p threadcount=100`
 
-The predefined suggested set of test suites is
+Sample run
+
+10 threads, with data integrity check
 
 ```
-./create-cassandra-schema-cloud.sh && ./load-cassandra.sh && ./run-cassandra.sh -P ../workloads/workload1
-./run-cassandra.sh -P ../workloads/workload2
-./run-cassandra.sh -P ../workloads/workload3
-./run-cassandra.sh -P ../workloads/workload4
-./run-cassandra.sh -P ../workloads/workload5
+./create-cassandra-schema-cloud.sh -u $CASSANDRA_USER -p $CASSANDRA_PASS $CQLSH_HOST
+./load-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=10 -p recordcount=100000 -p operationcount=100000
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=10 -p recordcount=100000 -p operationcount=100000 -P ../workloads/workload1
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=10 -p recordcount=100000 -p operationcount=100000 -P ../workloads/workload2
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=10 -p recordcount=100000 -p operationcount=100000 -P ../workloads/workload3
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=10 -p recordcount=100000 -p operationcount=100000 -P ../workloads/workload4
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=10 -p recordcount=100000 -p operationcount=100000 -P ../workloads/workload5
 ```
+
+10 threads, without data integrity check
+
+
+```
+./create-cassandra-schema-cloud.sh -u $CASSANDRA_USER -p $CASSANDRA_PASS $CQLSH_HOST
+./load-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=10 -p recordcount=100000 -p operationcount=100000 -p dataintegrity=false
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=10 -p recordcount=100000 -p operationcount=100000 -p dataintegrity=false -P ../workloads/workload1
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=10 -p recordcount=100000 -p operationcount=100000 -p dataintegrity=false -P ../workloads/workload2
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=10 -p recordcount=100000 -p operationcount=100000 -p dataintegrity=false -P ../workloads/workload3
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=10 -p recordcount=100000 -p operationcount=100000 -p dataintegrity=false -P ../workloads/workload4
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=10 -p recordcount=100000 -p operationcount=100000 -p dataintegrity=false -P ../workloads/workload5
+```
+
+100 threads, with data integrity check
+
+```
+./create-cassandra-schema-cloud.sh -u $CASSANDRA_USER -p $CASSANDRA_PASS $CQLSH_HOST
+./load-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=100 -p recordcount=100000 -p operationcount=100000
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=100 -p recordcount=100000 -p operationcount=100000 -P ../workloads/workload1
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=100 -p recordcount=100000 -p operationcount=100000 -P ../workloads/workload2
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=100 -p recordcount=100000 -p operationcount=100000 -P ../workloads/workload3
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=100 -p recordcount=100000 -p operationcount=100000 -P ../workloads/workload4
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=100 -p recordcount=100000 -p operationcount=100000 -P ../workloads/workload5
+```
+
+100 threads, without data integrity check
+
+```
+./create-cassandra-schema-cloud.sh -u $CASSANDRA_USER -p $CASSANDRA_PASS $CQLSH_HOST
+./load-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=100 -p recordcount=100000 -p operationcount=100000
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=100 -p recordcount=100000 -p operationcount=100000 -p dataintegrity=false -P ../workloads/workload1
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=100 -p recordcount=100000 -p operationcount=100000 -p dataintegrity=false -P ../workloads/workload2
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=100 -p recordcount=100000 -p operationcount=100000 -p dataintegrity=false -P ../workloads/workload3
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=100 -p recordcount=100000 -p operationcount=100000 -p dataintegrity=false -P ../workloads/workload4
+./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=100 -p recordcount=100000 -p operationcount=100000 -p dataintegrity=false -P ../workloads/workload5
+```
+
+-p dataintegrity=false
