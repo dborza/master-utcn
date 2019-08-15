@@ -19,11 +19,11 @@ Run the './scripts/cloudformation/quickstart-datastax-master.template' template 
 
 Log into the ssh host using the key pair and the ops public DNS name (which you can find in the EC2 -> Instances tab)
 
-`ssh -i "<PATH_TO_KEY_PAIR>" ubuntu@<PUBLIC_OPS_INSTANCE_DNS_NAME>
+`ssh -i "<PATH_TO_KEY_PAIR>" ubuntu@<PUBLIC_OPS_INSTANCE_DNS_NAME>`
 
 Original instructions https://github.com/brianfrankcooper/YCSB/wiki/Getting-Started
 
-Or run the script `./scripts/install-ycsb-ubuntu.sh'
+Or run the script `./scripts/install-ycsb-ubuntu.sh`
 
 Now make sure you can run YCSB on the machine by typing `ycsb`. The output should be an error message of the form `ycsb: error: too few arguments`
  
@@ -131,5 +131,3 @@ Sample run
 ./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=100 -p recordcount=100000 -p operationcount=100000 -p dataintegrity=false -P ../workloads/workload4
 ./run-cassandra.sh -p hosts=10.0.27.247,10.0.75.196,10.0.4.215,10.0.47.63,10.0.37.232,10.0.73.10 -p threadcount=100 -p recordcount=100000 -p operationcount=100000 -p dataintegrity=false -P ../workloads/workload5
 ```
-
--p dataintegrity=false
