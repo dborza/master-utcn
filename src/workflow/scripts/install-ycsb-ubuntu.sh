@@ -4,3 +4,4 @@ tar xfvz ycsb-0.14.0.tar.gz
 cd ycsb-0.14.0
 echo "PATH=\"\$PATH:`pwd`/bin\"" >> ~/.profile
 source ~/.profile
+cd ~
