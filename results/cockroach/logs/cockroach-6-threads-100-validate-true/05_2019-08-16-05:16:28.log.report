@@ -9,6 +9,12 @@
 [TOTAL_GCs], Count, 29
 [TOTAL_GC_TIME], Time(ms), 80
 [TOTAL_GC_TIME_%], Time(%), 0.37280395172188824
+[CLEANUP], Operations, 100
+[CLEANUP], AverageLatency(us), 44.09
+[CLEANUP], MinLatency(us), 30
+[CLEANUP], MaxLatency(us), 339
+[CLEANUP], 95thPercentileLatency(us), 73
+[CLEANUP], 99thPercentileLatency(us), 110
 [READ], Operations, 100000
 [READ], AverageLatency(us), 2164.15706
 [READ], MinLatency(us), 933
@@ -22,12 +28,6 @@
 [READ-MODIFY-WRITE], MaxLatency(us), 153343
 [READ-MODIFY-WRITE], 95thPercentileLatency(us), 33375
 [READ-MODIFY-WRITE], 99thPercentileLatency(us), 39807
-[CLEANUP], Operations, 100
-[CLEANUP], AverageLatency(us), 44.09
-[CLEANUP], MinLatency(us), 30
-[CLEANUP], MaxLatency(us), 339
-[CLEANUP], 95thPercentileLatency(us), 73
-[CLEANUP], 99thPercentileLatency(us), 110
 [UPDATE], Operations, 100000
 [UPDATE], AverageLatency(us), 18411.03334
 [UPDATE], MinLatency(us), 3558
